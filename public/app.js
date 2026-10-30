@@ -115,7 +115,7 @@
       '<div class="cr-gfx">' + spark(c, false, true) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
       '<div class="cr-body"><div class="prayer">' + esc(c.prayer.text) + '</div>' +
       '<div class="cr-pick">' + spark(c, true, true) + '</div>' +
-      '<p class="cr-count sub">Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + c.cc + '">Show all in this window</button></p>' +
+      '<p class="cr-count sub">Headlines for today shown · select a bar for another day · <button type="button" class="linkbtn" data-showall="' + c.cc + '">Show all in this window</button></p>' +
       '<div class="list cr-list" hidden></div>' +
       '<div class="acts"><a class="btn ghost" href="#c/' + c.cc + '">Full report</a><button class="btn ghost" data-addp="' + c.cc + '" type="button">Add to prayer space</button></div></div></details>';
   }
@@ -134,7 +134,23 @@
   function renderHero() {
     var k = D.kpi[view], isW = view === 'w7';
     $('dateline').textContent = 'Situation brief · updated ' + fmtDate(D.generated) + ' · ' + D.feeds.ok + ' of ' + D.feeds.total + ' sources live';
-    $('heroLine').innerHTML = '<b>' + k.hot + '</b> of ' + k.watched + ' countries with reporting are at High or Critical in the ' + winLabel() + '. <b>' + k.urgent + '</b> confirmed serious events ' + (isW ? 'landed in the last 72 hours' : 'happened this month') + '. Your countries come first.';
+    // top of the page: the brief for the countries this person watches
+    var wl = watchList().list.map(function (cc) { return byCc[cc]; }).filter(Boolean);
+    var wHot = wl.filter(function (c) { return W(c).band >= 4; }), wset = {}; wl.forEach(function (c) { wset[c.cc] = 1; });
+    var wUrgent = D.urgent[view].filter(function (u) { return wset[u.cc]; }).length;
+    var wUp = wl.filter(function (c) { var t = W(c).chg; return t && t.dir === 'up'; }).length;
+    var wEv = wl.reduce(function (n, c) { return n + W(c).ev; }, 0), wRep = wl.reduce(function (n, c) { return n + W(c).rep; }, 0);
+    var lead = wl.slice().sort(function (x, y) { return W(x).rank - W(y).rank; })[0];
+    $('heroLine').innerHTML = wl.length
+      ? '<b>' + wHot.length + '</b> of your <b>' + wl.length + '</b> countries ' + (wHot.length === 1 ? 'is' : 'are') + ' at High or Critical in the ' + winLabel() + '. <b>' + wUrgent + '</b> confirmed serious event' + (wUrgent === 1 ? '' : 's') + ' ' + (isW ? 'in the last 72 hours' : 'this month') + (lead ? '. Most urgent: ' + esc(lead.k) + '.' : '.')
+      : 'Add the countries you serve to see your brief here.';
+    $('watchKpis').innerHTML = [
+      ['Countries you watch', fmt(wl.length)], ['At High or Critical', fmt(wHot.length)], ['Rising', fmt(wUp)],
+      ['Events, ' + winLabel(), fmt(wEv)], ['Reports, ' + winLabel(), fmt(wRep)], ['Serious events' + (isW ? ', 72h' : ', 30d'), fmt(wUrgent)]
+    ].map(function (r) { return '<div class="kpi"><b>' + r[1] + '</b><span>' + r[0] + '</span></div>'; }).join('');
+    // the whole-world brief, shown just before the map
+    $('worldSub').textContent = winLabel();
+    $('worldLine').innerHTML = '<b>' + k.hot + '</b> of ' + k.watched + ' countries with reporting are at High or Critical in the ' + winLabel() + '. <b>' + k.urgent + '</b> confirmed serious events ' + (isW ? 'landed in the last 72 hours' : 'happened this month') + '.';
     $('kpis').innerHTML = [
       ['Countries with reporting', fmt(k.watched)], ['At High or Critical', fmt(k.hot)], ['Live sources', fmt(D.feeds.ok)],
       ['Reports, ' + winLabel(), fmt(k.reports)], ['Serious events' + (isW ? ', 72h' : ', 30d'), fmt(k.urgent)], ['Held for one source', fmt(k.held)]
@@ -150,6 +166,7 @@
     }).join('') + '<input type="search" id="wAdd" list="countryList" placeholder="Add a country…" aria-label="Add a country to your list" autocomplete="off">' +
       (w.custom ? '<button class="linkbtn" type="button" id="wReset">Reset to top 5 most urgent</button>' : '');
     $('watch').innerHTML = w.list.map(function (cc) { return countryRow(byCc[cc]); }).join('');
+    renderHero();
   }
   function renderUrgent() {
     var w = watchList(), set = {}; w.list.forEach(function (c) { set[c] = 1; });
@@ -287,7 +304,7 @@
       '<p class="lede" id="pSummary"></p>' +
       '<div class="prayer big">' + esc(c.prayer.text) + '</div>' +
       '<div class="sechead"><h2>Activity, <i>day by day</i></h2><span class="sub">' + chgLong(w) + '</span></div>' +
-      '<div class="panelbox" data-cc="' + cc + '">' + spark(c, true, true) + '<p class="cr-count sub">Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button></p><div class="list cr-list" hidden></div></div>' +
+      '<div class="panelbox" data-cc="' + cc + '">' + spark(c, true, true) + '<p class="cr-count sub">Headlines for today shown · select a bar for another day · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button></p><div class="list cr-list" hidden></div></div>' +
       '<div class="sevbar" id="sevbar"></div><div id="themes" class="chips"></div>' +
       '<div class="sechead"><h2>Urgent <i>history</i></h2><span class="sub" id="uhSub">Loading…</span></div><div class="list" id="uh"></div>' +
       '<div class="sechead"><h2>All <i>reports</i></h2><span class="sub" id="arSub"></span></div>' +
@@ -309,6 +326,7 @@
       (w.thin ? 'Coverage is thin, so treat this level with caution.' : '');
     var sel = $('fTh'); Object.keys(w30.th).concat(Object.keys(w7.th)).filter(function (t, i, a) { return a.indexOf(t) === i; }).forEach(function (t) { sel.insertAdjacentHTML('beforeend', '<option value="' + t + '">' + esc(TH[t] || t) + '</option>'); });
     loadProfile(cc);
+    var pb = el.querySelector('.panelbox'); if (pb) crowShow(pb, { today: true });
   }
   function loadProfile(cc) {
     function go(P) {
@@ -435,18 +453,25 @@
   }
   window.addEventListener('hashchange', route);
   var crowData = {};
+  function dayKeyNow() { return new Date().toISOString().slice(0, 10); }
   function crowShow(d, pick) {
     var cc = d.dataset.cc, c = byCc[cc], list = d.querySelector('.cr-list'), cnt = d.querySelector('.cr-count');
     function draw(P) {
       var evs = P.events, label;
-      if (pick.day) { evs = evs.filter(function (e) { return e.d === pick.day; }); label = shortDate(pick.day); }
+      var latest = false;
+      if (pick.today) {
+        var t = dayKeyNow(), mine = evs.filter(function (e) { return e.d === t; });
+        if (!mine.length) { var days = evs.map(function (e) { return e.d; }).sort(); t = days[days.length - 1]; latest = true; }
+        pick = { day: t }; d.dataset.pickedDay = t;
+      }
+      if (pick.day) { evs = evs.filter(function (e) { return e.d === pick.day; }); label = (pick.day === dayKeyNow() ? 'today, ' : latest ? 'no headlines today, latest day: ' : '') + shortDate(pick.day); }
       else { var cut = Date.now() - (view === 'w7' ? 7 : 30) * 864e5; evs = evs.filter(function (e) { return new Date(e.last + 'T23:59:59Z').getTime() > cut; }); label = view === 'w7' ? 'the last 7 days' : 'the last 30 days'; }
       evs.sort(function (x, y) { return y.s - x.s || (x.last < y.last ? 1 : -1); });
+      d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.toggle('sel', !!pick.day && r.dataset.day === pick.day); });
       list.hidden = false;
       list.innerHTML = evs.length ? evs.map(function (e) { return evRow(e, c, false); }).join('') : '<div class="empty">No headlines for this selection.</div>';
       cnt.innerHTML = evs.length + ' headline' + (evs.length === 1 ? '' : 's') + ', ' + (pick.day ? esc(label) : label) + ' · most serious first · <button type="button" class="linkbtn" data-clear="' + cc + '">Hide</button>' + (pick.day ? ' · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button>' : '');
     }
-    d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.toggle('sel', !!pick.day && r.dataset.day === pick.day); });
     if (crowData[cc]) return draw(crowData[cc]);
     fetch('data/c/' + cc + '.json').then(function (r) { return r.json(); }).then(function (P) { crowData[cc] = P; draw(P); })
       .catch(function () { cnt.textContent = 'Headlines are unavailable right now.'; });
@@ -455,11 +480,14 @@
     var r = e.target.closest && e.target.closest('.crow .spark rect[data-day], .panelbox .spark rect[data-day]'); if (!r) return false;
     e.preventDefault(); var d = r.closest('.crow, .panelbox'); if (d.classList.contains('crow')) d.open = true; crowShow(d, { day: r.dataset.day }); return true;
   }
+  document.addEventListener('toggle', function (ev) {
+    var d = ev.target; if (d.classList && d.classList.contains('crow') && d.open && !d.dataset.shown) { d.dataset.shown = '1'; crowShow(d, { today: true }); }
+  }, true);
   document.addEventListener('click', function (e) {
     if (crowPick(e)) return;
     var b = e.target.closest && e.target.closest('button[data-showall],button[data-clear]'); if (!b) return;
     var d = b.closest('.crow, .panelbox'); if (!d) return;
-    if (b.dataset.clear) { d.querySelector('.cr-list').hidden = true; d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.remove('sel'); }); d.querySelector('.cr-count').innerHTML = 'Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + d.dataset.cc + '">Show all in this window</button>'; }
+    if (b.dataset.clear) { d.querySelector('.cr-list').hidden = true; d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.remove('sel'); }); d.querySelector('.cr-count').innerHTML = 'Headlines for today shown · select a bar for another day · <button type="button" class="linkbtn" data-showall="' + d.dataset.cc + '">Show all in this window</button>'; }
     else crowShow(d, {});
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') crowPick(e); });
