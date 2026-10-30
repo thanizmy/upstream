@@ -29,6 +29,8 @@ jobs:
         run: node pipeline/run.mjs
         env:
           HISTORY_URL: ${{ env.SITE_URL }}/data/history.json
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optional: turns on English translation of local-language headlines
+          TRANSLATE_MAX: 800
       - name: Deploy to Cloudflare
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: npx wrangler deploy

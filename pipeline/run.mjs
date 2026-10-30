@@ -7,6 +7,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { COUNTRIES, detectCountries } from './countries.mjs';
 import { classify } from './classify.mjs';
 import { classifyLocal, supports } from './classify-local.mjs';
+import { translatePending, translationEnabled } from './translate.mjs';
 
 const OUT = process.env.OUT_DIR || 'public/data';
 const NOW = Date.now();
@@ -122,6 +123,9 @@ if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keepin
 const homeByFeed = Object.fromEntries(feeds.filter(f => !isWorld(f)).map(f => [f.name, f.cc || FEED_HINT[f.name]]));
 for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).slice(0, 3); it.cc = cc.length ? cc : homeByFeed[it.f] ? [homeByFeed[it.f]] : []; }
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
+// English translations of local-language headlines (only when a translation provider is configured)
+const tr = await translatePending(items);
+console.log(tr.off ? 'translation: off (set ANTHROPIC_API_KEY to turn on)' : `translation: ${tr.done}/${tr.tried} headlines${tr.error ? ', stopped: ' + tr.error : ''}`);
 // ── 3. cluster into unique events (per country) ──────────────────────────────
 const STOP = new Set('los las del que con por para una uno sus más como este esta tras sobre entre desde les des une pour dans par sur avec aux est sont plus cette après contre dos das uma mais após der die das und mit von für auf den dem ein eine nach über bei zum zur ist sind the and for with from that this have has will after over into about than their they were been are was its not but who how what when where why says said say new more news amid as of in on at to by is it be an a or up out off could would may after before during against'.split(' '));
 const toks = t => new Set(t.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w)));
@@ -175,9 +179,9 @@ for (const [cc, list] of Object.entries(perCountry)) {
     const localHosts = new Set(c.items.filter(x => feedHome[x.f] === cc).map(x => x.h));
     const langs = [...new Set(c.items.map(x => x.l || 'en'))].sort();
     return { id: hash(cc + rep.id), cc, h: rep.t, u: rep.u, s, ...(smax !== s ? { s0: smax } : {}), th: Object.entries(themes).sort((a, b) => b[1] - a[1])[0][0],
-      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), ...(localHosts.size ? { lo: localHosts.size } : {}), ...(langs.length > 1 ? { lg: langs } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
+      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), ...(rep.te ? { ht: rep.te } : {}), ...(localHosts.size ? { lo: localHosts.size } : {}), ...(langs.length > 1 ? { lg: langs } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
       hosts: [...outlets], T: rep.T,
-      items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s, ...(x.l ? { l: x.l } : {}) })) };
+      items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s, ...(x.l ? { l: x.l } : {}), ...(x.te ? { te: x.te } : {}) })) };
   });
 }
 
@@ -247,7 +251,7 @@ function windowStats(evs, days, z) {
     maxSev: Math.max(0, ...w.map(e => e.s)), band, sev: cnt.slice(1), th, chg
   };
 }
-const tg = e => ({ ...(e.l ? { l: e.l } : {}), ...(e.lo ? { lo: e.lo } : {}), ...(e.lg ? { lg: e.lg } : {}) });
+const tg = e => ({ ...(e.l ? { l: e.l } : {}), ...(e.ht ? { ht: e.ht } : {}), ...(e.lo ? { lo: e.lo } : {}), ...(e.lg ? { lg: e.lg } : {}) });
 const topOf = (evs, days, n) => [...evs].filter(e => e.last > NOW - days * DAY)
   .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last).slice(0, n)
   .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src, ...tg(e) }));
@@ -336,6 +340,7 @@ const gaps = countries.filter(c => c.w7.thin).sort((a, b) => b.w7.band - a.w7.ba
 
 const brief = {
   generated: new Date(NOW).toISOString(), baselineReady, historySince: hist.since, fullWeeks, spanDays,
+  translate: { on: translationEnabled(), done: tr.done || 0 },
   feeds: { total: feeds.length, ok: feedsOk, hostsSeen: sources, local: feeds.filter(f => f.lang).length, localOk: health.filter(h => h.ok && feeds.find(f => f.name === h.name)?.lang).length, langs: [...new Set(feeds.map(f => f.lang || 'en'))] }, itemsInWindow: inWindow, tracked: items.length,
   top5: r7.slice(0, 5), kpi: { w7: kpi(7), w30: kpi(30) },
   urgent: { w7: urgentSince(3, 40), w30: urgentSince(30, 60) },

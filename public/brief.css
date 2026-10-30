@@ -192,3 +192,5 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 /* the masthead .bar rule (centered, padded) was collapsing the severity bar segments to zero height */
 .sevbar .bar{align-items:stretch;flex-wrap:nowrap;padding:0;gap:2px;height:16px}
 .sevbar .bar i{height:100%}
+
+.ot{display:block;margin-top:4px;font:italic 12.5px/1.4 "Libre Franklin",system-ui,sans-serif;color:var(--muted);letter-spacing:0;text-transform:none}

@@ -35,6 +35,8 @@
   /** Non-English headlines open an English machine translation (Google Translate); the original stays one click away. */
   function trUrl(u, l) { return l && l !== 'en' && u ? 'https://translate.google.com/translate?sl=auto&tl=en&u=' + encodeURIComponent(u) : u; }
   function origLink(u, l) { return l && l !== 'en' && u ? '<a class="linkbtn orig" href="' + esc(u) + '" target="_blank" rel="noopener" title="Open the original page, in its own language">Original</a>' : '<span></span>'; }
+  /** The original headline, shown under an English translation. */
+  function ot(x) { return x.ht && x.h ? '<span class="ot">Original: ' + esc(x.h) + '</span>' : ''; }
   function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Headline written in ' + (LANGN[l] || l) + '. The link opens an English translation.">' + l.toUpperCase() + '</span>' : ''; }
   function tag(t, quiet) { return t ? '<span class="tag' + (quiet ? ' q' : '') + '">' + esc(t) + '</span>' : ''; }
   function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
@@ -87,8 +89,8 @@
   function evRow(e, c, withPray) {
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
-      '<a class="ev" href="' + esc(trUrl(u, e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
-      '<span class="m">' + srcTags(e) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
+      '<a class="ev" href="' + esc(trUrl(u, e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span>' +
+      '<span class="m">' + srcTags(e) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span>' + ot(e) + '</a>' +
       origLink(u, e.l) + '</div>';
   }
   function countryCard(c, o) {
@@ -113,7 +115,7 @@
     var w = W(c), lead = w.top[0];
     return '<details class="crow" data-cc="' + c.cc + '" style="--k:' + kc(w.band) + '"><summary>' +
       '<div class="cr-name"><span class="fl">' + c.fl + '</span><a class="cl" href="#c/' + c.cc + '">' + esc(c.k) + '</a>' + bandChip(w.band) + '</div>' +
-      '<div class="cr-sum"><p class="cr-head">' + (lead ? srcTags(lead) + tag(TH[lead.th]) + '<span>' + esc(lead.h) + '</span>' : 'No reports in this window') + '</p>' +
+      '<div class="cr-sum"><p class="cr-head">' + (lead ? srcTags(lead) + tag(TH[lead.th]) + '<span>' + esc(lead.ht || lead.h) + '</span>' : 'No reports in this window') + '</p>' +
       '<p class="cr-stats"><span class="lab">Summary</span><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p></div>' +
       '<div class="cr-gfx">' + spark(c, false, true) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
       '<div class="cr-body"><div class="prayer">' + esc(c.prayer.text) + '</div>' +
@@ -129,8 +131,8 @@
   }
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
-    return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(trUrl(url, u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
-      '<span class="m">' + srcTags(u) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a>' + origLink(url, u.l) + '</div>';
+    return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(trUrl(url, u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.ht || u.h) + '</span>' +
+      '<span class="m">' + srcTags(u) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span>' + ot(u) + '</a>' + origLink(url, u.l) + '</div>';
   }
 
   /* ── brief ─────────────────────────────────────────── */
@@ -195,7 +197,7 @@
       return '<a class="mv"><span><b>' + esc(TH[t.th] || t.th) + '</b> <span class="flat">· ' + t.cur + ' a day</span></span><span class="' + (up ? 'up' : 'down') + '">' + (t.pct == null ? 'new' : (t.pct > 0 ? '+' : '') + (Math.abs(t.pct) > 500 ? '500+' : t.pct) + '%') + '</span></a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No theme moved sharply.</p>';
     var sud = M.sudden.length ? M.sudden.slice(0, 4).map(function (e) {
-      return '<a class="mv sd" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat">' + esc(e.h) + '</span></span>' + pips(e.s) + '</a>';
+      return '<a class="mv sd" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat">' + esc(e.ht || e.h) + '</span></span>' + pips(e.s) + '</a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No new serious events in the last 48 hours.</p>';
     $('moved').innerHTML = '<div class="cells c4 moved"><div class="cell"><span class="k">Rising fastest</span>' + rows(M.up, 'up') + '</div>' +
       '<div class="cell"><span class="k">Quietening</span>' + rows(M.down, 'down') + '</div>' +
@@ -209,7 +211,7 @@
       var img = safeUrl(s.img);
       return '<a class="topc" href="' + esc(trUrl(safeUrl(s.u), s.l)) + '" target="_blank" rel="noopener">' +
         (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
-        '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.h) + '</h4>' +
+        '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.ht || s.h) + '</h4>' +
         '<p class="k">' + srcTags(s) + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
     }).join('') || '<div class="empty">No story has two independent outlets in this window yet.</div>';
   }
@@ -342,22 +344,22 @@
   function loadProfile(cc) {
     function go(P) {
       var all = [];
-      P.events.forEach(function (e) { e.items.forEach(function (it) { all.push({ t: it.t, u: it.u, f: it.f, l: it.l, d: it.d, s: it.s, th: e.th, n: e.r, eid: e.id }); }); });
+      P.events.forEach(function (e) { e.items.forEach(function (it) { all.push({ t: it.t, te: it.te, u: it.u, f: it.f, l: it.l, d: it.d, s: it.s, th: e.th, n: e.r, eid: e.id }); }); });
       all.sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : b.s - a.s; });
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
       $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 5 shown, scroll for more' : '');
       $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a>' + origLink(safeUrl(e.u), e.l) + '</div>';
+        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span>' + ot(e) + '</a>' + origLink(safeUrl(e.u), e.l) + '</div>';
       }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
       cap($('uh'), 5);
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
         var ms = +$('fSev').value, th = $('fTh').value, days = +$('fWin').value, cut = Date.now() - days * 864e5;
         var q = $('fQ').value.trim().toLowerCase();
-        var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut && (!q || (r.t + ' ' + r.f + ' ' + (TH[r.th] || '')).toLowerCase().indexOf(q) >= 0); });
+        var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut && (!q || ((r.te || '') + ' ' + r.t + ' ' + r.f + ' ' + (TH[r.th] || '')).toLowerCase().indexOf(q) >= 0); });
         $('arSub').textContent = rows.length + ' of ' + all.length + ' reports · first 5 shown, scroll for more';
         $('reports').innerHTML = rows.length ? rows.map(function (r) {
-          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span></a>' + origLink(safeUrl(r.u), r.l) + '</div>';
+          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.te || r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span>' + ot({ ht: r.te, h: r.t }) + '</a>' + origLink(safeUrl(r.u), r.l) + '</div>';
         }).join('') : '<div class="empty">No reports match these filters.</div>';
         cap($('reports'), 5);
       }
@@ -406,7 +408,7 @@
       '<h3>Weekly and monthly</h3><p>Use the Weekly / Monthly switch at the top of the Brief. Monthly figures cover the last 30 days. Upstream began collecting ' + esc(D.historySince) + ', so 30-day change and the own-baseline comparison fill in over time.</p>' +
       '<h3>Your countries and the default five</h3><p>Until you pick your own list, the top shows the five most urgent countries at the moment you open it. Your list and prayer space are stored in this browser only.</p>' +
       '<h3>What it cannot do</h3><ul><li>Severity comes from keyword rules, not a person reading the story. Expect misses and false alarms.</li>' +
-      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, and its link opens an English machine translation (an Original link sits beside it); <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
+      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, and its link opens an English machine translation (an Original link sits beside it). When translation is switched on, the headline itself is shown in English with the original beneath it; <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
       '<li>A quiet country may only be poorly covered by the feeds. Absence of news is not safety.</li>' +
       '<li>The US is counted only when an event happens there: a state or city is named, or the text says in the United States. Being named as an actor, as in US strikes, does not place an event in the US.</li>' +
       '<li>Country detection reads place names and nationalities in headlines. Headlines that name no place are skipped.</li>' +

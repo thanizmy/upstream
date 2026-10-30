@@ -25,3 +25,7 @@ A feed enters the registry only if `node pipeline/checkfeeds.mjs` passes it: the
 - **Surge** (after about three weeks of history): this week against the country's own median and spread of recent weeks, blended toward the world typical value while its own history is short. z >= 2.5 lifts the level one step; it never lowers one. Shown in the country report.
 - **US** is counted only when an event happens there (a state or city is named, or "in the United States"). Being named as an actor does not place an event in the US.
 - Stored history is re-scored automatically whenever the model version changes.
+
+## English translation of local-language headlines
+
+Off by default. Add a GitHub Actions secret named `ANTHROPIC_API_KEY` (and set a monthly spend limit in the Anthropic console) and the refresh translates new non-English headlines to English with Claude (`pipeline/translate.mjs`, default model `claude-haiku-5-5`, 40 headlines per call, at most `TRANSLATE_MAX` = 800 per run, most serious and newest first). Each translation is stored once on the item in `history.json`, so a headline is never translated twice. The page then shows the English headline with the original beneath it. With no key nothing changes: headlines stay in their own language and link to a machine-translated page. `TRANSLATE_PROVIDER=mock` exists only to test the display without a key.
