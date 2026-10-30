@@ -159,3 +159,11 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .moved .mv span:last-child{font-size:12px}
 .moved .mv.sd .flat{font-size:12px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .moved .flat{font-size:12.5px}
+
+/* Activity bars that open that day's headlines */
+.crow .spark rect[data-day]{cursor:pointer}
+.crow .spark rect[data-day]:hover{opacity:1;stroke:var(--navy);stroke-width:1.2}
+.crow .spark rect.sel{opacity:1;stroke:var(--navy);stroke-width:2}
+.crow .spark rect:focus-visible{outline:none;stroke:var(--navy);stroke-width:2}
+.cr-pick{margin:14px 0 4px;max-width:720px}
+.cr-pick .spark{height:84px}

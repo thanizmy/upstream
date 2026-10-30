@@ -61,14 +61,14 @@
   function savePray(p) { save(PK, p); }
 
   /* ── shared pieces ─────────────────────────────────── */
-  function spark(c, big) {
+  function spark(c, big, pick) {
     var S = c.series, n0 = S.n.length, from = view === 'w7' && !big ? n0 - 14 : 0;
     var N = S.n.slice(from), SV = S.s.slice(from), days = from ? 14 : n0;
     var Wd = 320, H = big ? 120 : 46, n = N.length, gap = 2, bw = (Wd - (n - 1) * gap) / n, mx = Math.max.apply(null, N) || 1, b = '';
     for (var i = 0; i < n; i++) {
       var h = N[i] ? Math.max(3, N[i] / mx * (H - 3)) : 0;
-      var dt = new Date(Date.now() - (n - 1 - i) * 864e5).toISOString().slice(5, 10);
-      b += '<rect x="' + (i * (bw + gap)).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" style="--k:' + kc(SV[i]) + '"><title>' + dt + ': ' + N[i] + ' event' + (N[i] === 1 ? '' : 's') + '</title></rect>';
+      var day = new Date(new Date(D.generated).getTime() - (n0 - 1 - (from + i)) * 864e5).toISOString().slice(0, 10), dt = day.slice(5);
+      b += '<rect x="' + (i * (bw + gap)).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" style="--k:' + kc(SV[i]) + '"' + (pick && N[i] ? ' data-day="' + day + '" tabindex="0" role="button" aria-label="Show headlines for ' + dt + '"' : '') + '><title>' + dt + ': ' + N[i] + ' event' + (N[i] === 1 ? '' : 's') + (pick && N[i] ? ' · select to see headlines' : '') + '</title></rect>';
     }
     return '<svg class="spark' + (big ? ' big' : '') + '" viewBox="0 0 ' + Wd + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Events per day, last ' + days + ' days">' + b + '<line class="base" x1="0" y1="' + H + '" x2="' + Wd + '" y2="' + H + '"/></svg>' +
       '<span class="sparkcap"><span>' + days + ' days ago</span><span>' + mx + ' peak</span><span>today</span></span>';
@@ -104,10 +104,11 @@
       '<div class="cr-name"><span class="fl">' + c.fl + '</span><a class="cl" href="#c/' + c.cc + '">' + esc(c.k) + '</a>' + bandChip(w.band) + '</div>' +
       '<div class="cr-sum"><p class="cr-head">' + (lead ? lang(lead.l) + tag(TH[lead.th]) + '<span>' + esc(lead.h) + '</span>' : 'No reports in this window') + '</p>' +
       '<p class="cr-stats"><span class="lab">Summary</span><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p></div>' +
-      '<div class="cr-gfx">' + spark(c) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
+      '<div class="cr-gfx">' + spark(c, false, true) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
       '<div class="cr-body"><div class="prayer">' + esc(c.prayer.text) + '</div>' +
-      '<p class="cr-count sub">' + w.top.length + ' headlines shown · <span data-all>loading all…</span></p>' +
-      '<div class="list cr-list">' + w.top.map(function (e) { return evRow(e, c, false); }).join('') + '</div>' +
+      '<div class="cr-pick">' + spark(c, true, true) + '</div>' +
+      '<p class="cr-count sub">Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + c.cc + '">Show all in this window</button></p>' +
+      '<div class="list cr-list" hidden></div>' +
       '<div class="acts"><a class="btn ghost" href="#c/' + c.cc + '">Full report</a><button class="btn ghost" data-addp="' + c.cc + '" type="button">Add to prayer space</button></div></div></details>';
   }
   function findEvent(id, cc) {
@@ -425,16 +426,35 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
-  document.addEventListener('toggle', function (ev) {
-    var d = ev.target; if (!d.classList || !d.classList.contains('crow') || !d.open || d.dataset.loaded) return;
-    d.dataset.loaded = '1';
-    var cc = d.dataset.cc, c = byCc[cc], days = view === 'w7' ? 7 : 30, cut = Date.now() - days * 864e5;
-    fetch('data/c/' + cc + '.json').then(function (r) { return r.json(); }).then(function (P) {
-      var evs = P.events.filter(function (e) { return new Date(e.last + 'T23:59:59Z').getTime() > cut; }).sort(function (x, y) { return y.s - x.s || (x.last < y.last ? 1 : -1); });
-      d.querySelector('.cr-list').innerHTML = evs.length ? evs.map(function (e) { return evRow(e, c, false); }).join('') : '<div class="empty">No headlines in this window.</div>';
-      d.querySelector('.cr-count').innerHTML = evs.length + ' headlines, ' + (view === 'w7' ? 'last 7 days' : 'last 30 days') + ' · most serious first';
-    }).catch(function () { var s = d.querySelector('[data-all]'); if (s) s.textContent = 'full list unavailable'; });
-  }, true);
+  var crowData = {};
+  function crowShow(d, pick) {
+    var cc = d.dataset.cc, c = byCc[cc], list = d.querySelector('.cr-list'), cnt = d.querySelector('.cr-count');
+    function draw(P) {
+      var evs = P.events, label;
+      if (pick.day) { evs = evs.filter(function (e) { return e.d === pick.day; }); label = shortDate(pick.day); }
+      else { var cut = Date.now() - (view === 'w7' ? 7 : 30) * 864e5; evs = evs.filter(function (e) { return new Date(e.last + 'T23:59:59Z').getTime() > cut; }); label = view === 'w7' ? 'the last 7 days' : 'the last 30 days'; }
+      evs.sort(function (x, y) { return y.s - x.s || (x.last < y.last ? 1 : -1); });
+      list.hidden = false;
+      list.innerHTML = evs.length ? evs.map(function (e) { return evRow(e, c, false); }).join('') : '<div class="empty">No headlines for this selection.</div>';
+      cnt.innerHTML = evs.length + ' headline' + (evs.length === 1 ? '' : 's') + ', ' + (pick.day ? esc(label) : label) + ' · most serious first · <button type="button" class="linkbtn" data-clear="' + cc + '">Hide</button>' + (pick.day ? ' · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button>' : '');
+    }
+    d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.toggle('sel', !!pick.day && r.dataset.day === pick.day); });
+    if (crowData[cc]) return draw(crowData[cc]);
+    fetch('data/c/' + cc + '.json').then(function (r) { return r.json(); }).then(function (P) { crowData[cc] = P; draw(P); })
+      .catch(function () { cnt.textContent = 'Headlines are unavailable right now.'; });
+  }
+  function crowPick(e) {
+    var r = e.target.closest && e.target.closest('.crow .spark rect[data-day]'); if (!r) return false;
+    e.preventDefault(); var d = r.closest('.crow'); d.open = true; crowShow(d, { day: r.dataset.day }); return true;
+  }
+  document.addEventListener('click', function (e) {
+    if (crowPick(e)) return;
+    var b = e.target.closest && e.target.closest('button[data-showall],button[data-clear]'); if (!b) return;
+    var d = b.closest('.crow'); if (!d) return;
+    if (b.dataset.clear) { d.querySelector('.cr-list').hidden = true; d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.remove('sel'); }); d.querySelector('.cr-count').innerHTML = 'Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + d.dataset.cc + '">Show all in this window</button>'; }
+    else crowShow(d, {});
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') crowPick(e); });
   /* section bar: scroll to a section, and highlight the one in view */
   function secBar() {
     var bar = $('secnav'); if (!bar) return;
