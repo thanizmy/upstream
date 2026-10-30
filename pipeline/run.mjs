@@ -66,7 +66,7 @@ hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored b
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
 // ── 2. fetch ─────────────────────────────────────────────────────────────────
-const feeds = [...JSON.parse(fs.readFileSync(new URL('./feeds.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local.json', import.meta.url))).filter(f => supports(f.lang))];
+const feeds = [...JSON.parse(fs.readFileSync(new URL('./feeds.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local2.json', import.meta.url)))].filter(f => !f.lang || supports(f.lang));
 const health = [];
 let inWindow = 0, bad = 0, fresh = 0;
 const queue = [...feeds];

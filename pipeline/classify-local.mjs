@@ -1,5 +1,6 @@
 // Rule-based severity and theme for non-English headlines. Same ladder as classify.mjs, with word stems per language.
 // Latin and Cyrillic stems must start a word; Arabic stems match anywhere because of attached prefixes.
+import { EXTRA, NOLEFT_EXTRA, LANG_NAME_EXTRA } from './langs-extra.mjs';
 const T = {
   es: {
     kill: 'muert|muri[oó]|murieron|asesin|fallec|mat[oó] |matan|masacr|ejecutad|decapit|cad[aá]ver',
@@ -143,7 +144,8 @@ T.vi = {
   politics: 'b[ầa]u c[ửu]|qu[ốo]c h[ộo]i|b[ộo] tr[ưu][ởo]ng|t[ổo]ng th[ốo]ng|chính ph[ủu]|tr[ừu]ng ph[ạa]t|h[ộo]i ngh[ịi] th[ưu][ợo]ng đ[ỉi]nh|hi[ệe]p ư[ớo]c|ng[ừu]ng b[ắa]n|đàm phán|ngo[ạa]i giao|tr[ưu]ng c[ầa]u|thủ tướng',
   sport: 'bóng đá|gi[ảa]i vô đ[ịi]ch|world cup|tennis|hòa nh[ạa]c|phim|ngôi sao|thời trang|công th[ứu]c|tử vi|ca sĩ'
 };
-const NOLEFT = new Set(['ar']);
+Object.assign(T, EXTRA);
+const NOLEFT = new Set(['ar', ...NOLEFT_EXTRA]);
 const RX = {};
 for (const [lang, groups] of Object.entries(T)) {
   RX[lang] = {};
@@ -152,7 +154,7 @@ for (const [lang, groups] of Object.entries(T)) {
 const KILL_NEAR = lang => new RegExp('(\\d[\\d.,]*)\\s{0,3}(?:\\p{L}+\\s+){0,2}(?:' + T[lang].kill + ')|(?:' + T[lang].kill + ')\\p{L}*\\s{0,3}(?:\\p{L}+\\s+){0,2}(\\d[\\d.,]*)', 'iu');
 const NEAR = Object.fromEntries(Object.keys(T).map(l => [l, KILL_NEAR(l)]));
 
-export const LANG_NAME = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese' };
+export const LANG_NAME = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese', ...LANG_NAME_EXTRA };
 export const supports = lang => !!RX[lang];
 
 export function classifyLocal(title, summary, lang) {

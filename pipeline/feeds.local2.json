@@ -1,0 +1,768 @@
+[
+ {
+  "name": "24.kg",
+  "url": "https://24.kg/rss/",
+  "n": 50,
+  "lang": "ru",
+  "cc": "KG"
+ },
+ {
+  "name": "AA Türkçe",
+  "url": "https://www.aa.com.tr/tr/rss/default?cat=guncel",
+  "n": 30,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "ABC Color",
+  "url": "https://www.abc.com.py/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "es",
+  "cc": "PY"
+ },
+ {
+  "name": "Actu Cameroun",
+  "url": "https://actucameroun.com/feed/",
+  "n": 20,
+  "lang": "fr",
+  "cc": "CM"
+ },
+ {
+  "name": "ANSA Mondo",
+  "url": "https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml",
+  "n": 43,
+  "lang": "it",
+  "cc": "IT"
+ },
+ {
+  "name": "Antara",
+  "url": "https://www.antaranews.com/rss/terkini.xml",
+  "n": 50,
+  "lang": "id",
+  "cc": "ID"
+ },
+ {
+  "name": "BBC हिंदी",
+  "url": "https://feeds.bbci.co.uk/hindi/rss.xml",
+  "n": 37,
+  "lang": "hi",
+  "cc": "IN"
+ },
+ {
+  "name": "BBC বাংলা",
+  "url": "https://feeds.bbci.co.uk/bengali/rss.xml",
+  "n": 14,
+  "lang": "bn",
+  "cc": "BD"
+ },
+ {
+  "name": "BBC ไทย",
+  "url": "https://feeds.bbci.co.uk/thai/rss.xml",
+  "n": 15,
+  "lang": "th",
+  "cc": "TH"
+ },
+ {
+  "name": "BBC 한국어",
+  "url": "https://feeds.bbci.co.uk/korean/rss.xml",
+  "n": 19,
+  "lang": "ko",
+  "cc": "KR"
+ },
+ {
+  "name": "BBC 中文",
+  "url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml",
+  "n": 38,
+  "lang": "zh"
+ },
+ {
+  "name": "Burkina24",
+  "url": "https://burkina24.com/feed/",
+  "n": 6,
+  "lang": "fr",
+  "cc": "BF"
+ },
+ {
+  "name": "Carta de Moçambique",
+  "url": "https://cartamz.com/index.php/feed",
+  "n": 10,
+  "lang": "pt",
+  "cc": "MZ"
+ },
+ {
+  "name": "CiberCuba",
+  "url": "https://www.cibercuba.com/rss.xml",
+  "n": 10,
+  "lang": "es",
+  "cc": "CU"
+ },
+ {
+  "name": "CNN Indonesia",
+  "url": "https://www.cnnindonesia.com/nasional/rss",
+  "n": 100,
+  "lang": "id",
+  "cc": "ID"
+ },
+ {
+  "name": "Criterio Honduras",
+  "url": "https://criterio.hn/feed/",
+  "n": 5,
+  "lang": "es",
+  "cc": "HN"
+ },
+ {
+  "name": "Cubanet",
+  "url": "https://www.cubanet.org/feed/",
+  "n": 10,
+  "lang": "es",
+  "cc": "CU"
+ },
+ {
+  "name": "Cumhuriyet",
+  "url": "https://www.cumhuriyet.com.tr/rss/son_dakika.xml",
+  "n": 100,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "Dabanga عربي",
+  "url": "https://www.dabangasudan.org/ar/feed",
+  "n": 12,
+  "lang": "ar",
+  "cc": "SD"
+ },
+ {
+  "name": "Daily NK 한국어",
+  "url": "https://www.dailynk.com/feed/",
+  "n": 10,
+  "lang": "ko",
+  "cc": "KP"
+ },
+ {
+  "name": "Der Standard",
+  "url": "https://www.derstandard.at/rss",
+  "n": 158,
+  "lang": "de",
+  "cc": "AT"
+ },
+ {
+  "name": "Despacho 505",
+  "url": "https://despacho505.com/feed/",
+  "n": 10,
+  "lang": "es",
+  "cc": "NI"
+ },
+ {
+  "name": "Diario de Cuba",
+  "url": "https://diariodecuba.com/rss.xml",
+  "n": 10,
+  "lang": "es",
+  "cc": "CU"
+ },
+ {
+  "name": "DW فارسی",
+  "url": "https://rss.dw.com/rdf/rss-per-all",
+  "n": 19,
+  "lang": "fa",
+  "cc": "IR"
+ },
+ {
+  "name": "DW 中文",
+  "url": "https://rss.dw.com/rdf/rss-chi-all",
+  "n": 60,
+  "lang": "zh"
+ },
+ {
+  "name": "Echorouk",
+  "url": "https://www.echoroukonline.com/feed",
+  "n": 10,
+  "lang": "ar",
+  "cc": "DZ"
+ },
+ {
+  "name": "El Financiero",
+  "url": "https://www.elfinanciero.com.mx/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "es",
+  "cc": "MX"
+ },
+ {
+  "name": "El Mundo",
+  "url": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
+  "n": 28,
+  "lang": "es",
+  "cc": "ES"
+ },
+ {
+  "name": "El Nacional Venezuela",
+  "url": "https://www.elnacional.com/feed/",
+  "n": 100,
+  "lang": "es",
+  "cc": "VE"
+ },
+ {
+  "name": "El País España",
+  "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+  "n": 151,
+  "lang": "es",
+  "cc": "ES"
+ },
+ {
+  "name": "El Universo",
+  "url": "https://www.eluniverso.com/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "es",
+  "cc": "EC"
+ },
+ {
+  "name": "Enab Baladi",
+  "url": "https://www.enabbaladi.net/feed/",
+  "n": 19,
+  "lang": "ar",
+  "cc": "SY"
+ },
+ {
+  "name": "Estadão",
+  "url": "https://www.estadao.com.br/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "pt",
+  "cc": "BR"
+ },
+ {
+  "name": "FAZ Ausland",
+  "url": "https://www.faz.net/rss/aktuell/politik/ausland/",
+  "n": 43,
+  "lang": "de",
+  "cc": "DE"
+ },
+ {
+  "name": "Franceinfo",
+  "url": "https://www.francetvinfo.fr/titres.rss",
+  "n": 28,
+  "lang": "fr",
+  "cc": "FR"
+ },
+ {
+  "name": "Gabonreview",
+  "url": "https://www.gabonreview.com/feed/",
+  "n": 30,
+  "lang": "fr",
+  "cc": "GA"
+ },
+ {
+  "name": "Gazeta do Povo Mundo",
+  "url": "https://www.gazetadopovo.com.br/feed/rss/mundo.xml",
+  "n": 60,
+  "lang": "pt",
+  "cc": "BR"
+ },
+ {
+  "name": "Gazeta.uz RU",
+  "url": "https://www.gazeta.uz/ru/rss/",
+  "n": 20,
+  "lang": "ru",
+  "cc": "UZ"
+ },
+ {
+  "name": "Guinée News",
+  "url": "https://guineenews.org/feed/",
+  "n": 31,
+  "lang": "fr",
+  "cc": "GN"
+ },
+ {
+  "name": "Habari Leo",
+  "url": "https://www.habarileo.co.tz/feed/",
+  "n": 10,
+  "lang": "sw",
+  "cc": "TZ"
+ },
+ {
+  "name": "Habertürk",
+  "url": "https://www.haberturk.com/rss",
+  "n": 100,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "Hespress Français",
+  "url": "https://fr.hespress.com/feed",
+  "n": 10,
+  "lang": "fr",
+  "cc": "MA"
+ },
+ {
+  "name": "Hürriyet",
+  "url": "https://www.hurriyet.com.tr/rss/anasayfa",
+  "n": 66,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "Kloop",
+  "url": "https://kloop.kg/feed/",
+  "n": 12,
+  "lang": "ru",
+  "cc": "KG"
+ },
+ {
+  "name": "La Nación Costa Rica",
+  "url": "https://www.nacion.com/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "es",
+  "cc": "CR"
+ },
+ {
+  "name": "La Prensa Panamá",
+  "url": "https://www.prensa.com/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "es",
+  "cc": "PA"
+ },
+ {
+  "name": "Le Figaro International",
+  "url": "https://www.lefigaro.fr/rss/figaro_international.xml",
+  "n": 20,
+  "lang": "fr",
+  "cc": "FR"
+ },
+ {
+  "name": "Lenta.ru",
+  "url": "https://lenta.ru/rss/news",
+  "n": 200,
+  "lang": "ru",
+  "cc": "RU"
+ },
+ {
+  "name": "Milliyet",
+  "url": "https://www.milliyet.com.tr/rss/rssnew/gundemrss.xml",
+  "n": 20,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "News.am RU",
+  "url": "https://news.am/rus/rss/",
+  "n": 100,
+  "lang": "ru",
+  "cc": "AM"
+ },
+ {
+  "name": "NHK 国際",
+  "url": "https://www.nhk.or.jp/rss/news/cat6.xml",
+  "n": 142,
+  "lang": "ja",
+  "cc": "JP"
+ },
+ {
+  "name": "Notícias ao Minuto Mundo",
+  "url": "https://www.noticiasaominuto.com/rss/mundo",
+  "n": 700,
+  "lang": "pt"
+ },
+ {
+  "name": "NTV",
+  "url": "https://www.ntv.com.tr/gundem.rss",
+  "n": 20,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "NZZ International",
+  "url": "https://www.nzz.ch/international.rss",
+  "n": 68,
+  "lang": "de",
+  "cc": "CH"
+ },
+ {
+  "name": "Observador",
+  "url": "https://observador.pt/feed/",
+  "n": 51,
+  "lang": "pt",
+  "cc": "PT"
+ },
+ {
+  "name": "Okaz",
+  "url": "https://www.okaz.com.sa/rssFeed/0",
+  "n": 50,
+  "lang": "ar",
+  "cc": "SA"
+ },
+ {
+  "name": "Okezone",
+  "url": "https://sindikasi.okezone.com/index.php/rss/0/RSS2.0",
+  "n": 30,
+  "lang": "id",
+  "cc": "ID"
+ },
+ {
+  "name": "ORF",
+  "url": "https://rss.orf.at/news.xml",
+  "n": 19,
+  "lang": "de",
+  "cc": "AT"
+ },
+ {
+  "name": "Perfil",
+  "url": "https://www.perfil.com/feed",
+  "n": 50,
+  "lang": "es",
+  "cc": "AR"
+ },
+ {
+  "name": "Politico RDC",
+  "url": "https://www.politico.cd/feed",
+  "n": 10,
+  "lang": "fr",
+  "cc": "CD"
+ },
+ {
+  "name": "Repubblica Esteri",
+  "url": "https://www.repubblica.it/rss/esteri/rss2.0.xml",
+  "n": 25,
+  "lang": "it",
+  "cc": "IT"
+ },
+ {
+  "name": "Republika",
+  "url": "https://www.republika.co.id/rss",
+  "n": 15,
+  "lang": "id",
+  "cc": "ID"
+ },
+ {
+  "name": "RFI 中文",
+  "url": "https://www.rfi.fr/cn/rss",
+  "n": 30,
+  "lang": "zh"
+ },
+ {
+  "name": "RPP",
+  "url": "https://rpp.pe/feed",
+  "n": 60,
+  "lang": "es",
+  "cc": "PE"
+ },
+ {
+  "name": "RTP Notícias",
+  "url": "https://www.rtp.pt/noticias/rss",
+  "n": 50,
+  "lang": "pt",
+  "cc": "PT"
+ },
+ {
+  "name": "Runrunes",
+  "url": "https://runrun.es/feed/",
+  "n": 8,
+  "lang": "es",
+  "cc": "VE"
+ },
+ {
+  "name": "Sabah",
+  "url": "https://www.sabah.com.tr/rss/gundem.xml",
+  "n": 10,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "Semana",
+  "url": "https://www.semana.com/arc/outboundfeeds/rss/?outputType=xml",
+  "n": 100,
+  "lang": "es",
+  "cc": "CO"
+ },
+ {
+  "name": "SRF News",
+  "url": "https://www.srf.ch/news/bnf/rss/1646",
+  "n": 85,
+  "lang": "de",
+  "cc": "CH"
+ },
+ {
+  "name": "Süddeutsche Politik",
+  "url": "https://rss.sueddeutsche.de/rss/Politik",
+  "n": 15,
+  "lang": "de",
+  "cc": "DE"
+ },
+ {
+  "name": "Tengrinews RU",
+  "url": "https://tengrinews.kz/news.rss",
+  "n": 102,
+  "lang": "ru",
+  "cc": "KZ"
+ },
+ {
+  "name": "TRT Haber",
+  "url": "https://www.trthaber.com/sondakika.rss",
+  "n": 50,
+  "lang": "tr",
+  "cc": "TR"
+ },
+ {
+  "name": "Tuổi Trẻ Xã hội",
+  "url": "https://tuoitre.vn/rss/nhip-song-tre.rss",
+  "n": 50,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "Vatican News Deutsch",
+  "url": "https://www.vaticannews.va/de.rss.xml",
+  "n": 50,
+  "lang": "de"
+ },
+ {
+  "name": "Vatican News Español",
+  "url": "https://www.vaticannews.va/es.rss.xml",
+  "n": 50,
+  "lang": "es"
+ },
+ {
+  "name": "Vatican News Français",
+  "url": "https://www.vaticannews.va/fr.rss.xml",
+  "n": 50,
+  "lang": "fr"
+ },
+ {
+  "name": "Vatican News Italiano",
+  "url": "https://www.vaticannews.va/it.rss.xml",
+  "n": 50,
+  "lang": "it"
+ },
+ {
+  "name": "Vatican News Português",
+  "url": "https://www.vaticannews.va/pt.rss.xml",
+  "n": 50,
+  "lang": "pt"
+ },
+ {
+  "name": "Vatican News Tiếng Việt",
+  "url": "https://www.vaticannews.va/vi.rss.xml",
+  "n": 50,
+  "lang": "vi"
+ },
+ {
+  "name": "Vatican News العربية",
+  "url": "https://www.vaticannews.va/ar.rss.xml",
+  "n": 46,
+  "lang": "ar"
+ },
+ {
+  "name": "Welt Politik",
+  "url": "https://www.welt.de/feeds/section/politik.rss",
+  "n": 30,
+  "lang": "de",
+  "cc": "DE"
+ },
+ {
+  "name": "Ynet",
+  "url": "https://www.ynet.co.il/Integration/StoryRss2.xml",
+  "n": 30,
+  "lang": "he",
+  "cc": "IL"
+ },
+ {
+  "name": "Zeit Politik",
+  "url": "https://newsfeed.zeit.de/politik/index",
+  "n": 15,
+  "lang": "de",
+  "cc": "DE"
+ },
+ {
+  "name": "Zing News",
+  "url": "https://znews.vn/rss/the-gioi.rss",
+  "n": 24,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "Интерфакс",
+  "url": "https://www.interfax.ru/rss.asp",
+  "n": 25,
+  "lang": "ru",
+  "cc": "RU"
+ },
+ {
+  "name": "Коммерсантъ",
+  "url": "https://www.kommersant.ru/RSS/news.xml",
+  "n": 548,
+  "lang": "ru",
+  "cc": "RU"
+ },
+ {
+  "name": "Медиазона",
+  "url": "https://zona.media/rss",
+  "n": 50,
+  "lang": "ru",
+  "cc": "RU"
+ },
+ {
+  "name": "Новая газета Европа",
+  "url": "https://novayagazeta.eu/feed/rss",
+  "n": 100,
+  "lang": "ru",
+  "cc": "RU"
+ },
+ {
+  "name": "ТАСС",
+  "url": "https://tass.ru/rss/v2.xml",
+  "n": 95,
+  "lang": "ru",
+  "cc": "RU"
+ },
+ {
+  "name": "Укрінформ",
+  "url": "https://www.ukrinform.ua/rss/block-lastnews",
+  "n": 30,
+  "lang": "ru",
+  "cc": "UA"
+ },
+ {
+  "name": "וואלה",
+  "url": "https://rss.walla.co.il/feed/1",
+  "n": 30,
+  "lang": "he",
+  "cc": "IL"
+ },
+ {
+  "name": "ישראל היום",
+  "url": "https://www.israelhayom.co.il/rss.xml",
+  "n": 100,
+  "lang": "he",
+  "cc": "IL"
+ },
+ {
+  "name": "מעריב",
+  "url": "https://www.maariv.co.il/Rss/RssFeedsMivzakim",
+  "n": 20,
+  "lang": "he",
+  "cc": "IL"
+ },
+ {
+  "name": "انڈیپنڈنٹ اردو",
+  "url": "https://www.independenturdu.com/rss.xml",
+  "n": 10,
+  "lang": "ur",
+  "cc": "PK"
+ },
+ {
+  "name": "ایران‌وایر",
+  "url": "https://iranwire.com/fa/feed/",
+  "n": 817,
+  "lang": "fa",
+  "cc": "IR"
+ },
+ {
+  "name": "ایکسپریس اردو",
+  "url": "https://www.express.pk/feed/",
+  "n": 50,
+  "lang": "ur",
+  "cc": "PK"
+ },
+ {
+  "name": "یورونیوز فارسی",
+  "url": "https://parsi.euronews.com/rss?level=theme&name=news",
+  "n": 50,
+  "lang": "fa",
+  "cc": "IR"
+ },
+ {
+  "name": "अमर उजाला",
+  "url": "https://www.amarujala.com/rss/breaking-news.xml",
+  "n": 11,
+  "lang": "hi",
+  "cc": "IN"
+ },
+ {
+  "name": "आज तक",
+  "url": "https://www.aajtak.in/rssfeeds/?id=home",
+  "n": 146,
+  "lang": "hi",
+  "cc": "IN"
+ },
+ {
+  "name": "दैनिक भास्कर",
+  "url": "https://www.bhaskar.com/rss-v1--category-1061.xml",
+  "n": 57,
+  "lang": "hi",
+  "cc": "IN"
+ },
+ {
+  "name": "প্রথম আলো",
+  "url": "https://www.prothomalo.com/feed",
+  "n": 53,
+  "lang": "bn",
+  "cc": "BD"
+ },
+ {
+  "name": "ข่าวสด",
+  "url": "https://www.khaosod.co.th/feed",
+  "n": 50,
+  "lang": "th",
+  "cc": "TH"
+ },
+ {
+  "name": "มติชน",
+  "url": "https://www.matichon.co.th/feed",
+  "n": 50,
+  "lang": "th",
+  "cc": "TH"
+ },
+ {
+  "name": "동아일보 국제",
+  "url": "https://rss.donga.com/international.xml",
+  "n": 50,
+  "lang": "ko",
+  "cc": "KR"
+ },
+ {
+  "name": "연합뉴스 국제",
+  "url": "https://www.yna.co.kr/rss/international.xml",
+  "n": 120,
+  "lang": "ko",
+  "cc": "KR"
+ },
+ {
+  "name": "中央社 國際",
+  "url": "https://feeds.feedburner.com/rsscna/intworld",
+  "n": 20,
+  "lang": "zh",
+  "cc": "TW"
+ },
+ {
+  "name": "中新网 国际",
+  "url": "http://www.chinanews.com.cn/rss/world.xml",
+  "n": 30,
+  "lang": "zh",
+  "cc": "CN"
+ },
+ {
+  "name": "朝日新聞",
+  "url": "https://www.asahi.com/rss/asahi/newsheadlines.rdf",
+  "n": 40,
+  "lang": "ja",
+  "cc": "JP"
+ },
+ {
+  "name": "毎日新聞",
+  "url": "https://mainichi.jp/rss/etc/mainichi-flash.rss",
+  "n": 20,
+  "lang": "ja",
+  "cc": "JP"
+ },
+ {
+  "name": "自由時報 國際",
+  "url": "https://news.ltn.com.tw/rss/world.xml",
+  "n": 40,
+  "lang": "zh",
+  "cc": "TW"
+ },
+ {
+  "name": "香港電台 國際",
+  "url": "https://rthk.hk/rthk/news/rss/c_expressnews_cinternational.xml",
+  "n": 20,
+  "lang": "zh",
+  "cc": "HK"
+ }
+]

@@ -38,8 +38,10 @@ const MANUAL = {
 
 export const COUNTRIES = {}; // cc -> {k, cc, fl, ll, region}
 const aliasToCc = new Map();
+// scripts written without spaces (Chinese, Japanese, Korean, Thai) cannot be matched on word boundaries
+const NB_RE = /[\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/;
 function addAlias(a, cc) {
-  if (!a || a.length < 3 || BAD_ALIAS.has(a)) return;
+  if (!a || a.length < (NB_RE.test(a) ? 2 : 3) || BAD_ALIAS.has(a)) return;
   if (!aliasToCc.has(a)) aliasToCc.set(a, cc);
 }
 for (const c of raw) {
@@ -52,7 +54,7 @@ for (const c of raw) {
   (c.capital || []).forEach(a => { if (!NO_CAPITAL.has(a)) addAlias(a, cc); });
   if (c.demonyms?.eng?.m) addAlias(c.demonyms.eng.m, cc);
   // local-language country names, so Spanish, French, Portuguese, German, Arabic, Russian and Turkish headlines can be placed
-  for (const l of ['spa', 'fra', 'por', 'deu', 'ara', 'rus', 'tur']) {
+  for (const l of ['spa', 'fra', 'por', 'deu', 'ara', 'rus', 'tur', 'per', 'urd', 'zho', 'jpn', 'kor', 'ita']) {
     const t = c.translations?.[l]; if (t) { addAlias(t.common, cc); }
   }
 }
@@ -66,15 +68,24 @@ const VI_NAMES = { RU: ['Nga'], CN: ['Trung Quốc'], KR: ['Hàn Quốc'], KP: [
   IN: ['Ấn Độ'], FR: ['Pháp'], DE: ['Đức'], VN: ['Việt Nam'], HK: ['Hồng Kông'], TW: ['Đài Loan'], SA: ['Ả Rập Xê Út'], TR: ['Thổ Nhĩ Kỳ'], EG: ['Ai Cập'],
   NL: ['Hà Lan'], UA: ['Ukraina'], PH: ['Philippines'], MM: ['Myanmar'], PS: ['Palestine'], IL: ['Israel'], SG: ['Singapore'], AU: ['Úc'], PL: ['Ba Lan'], IT: ['Italia'], ES: ['Tây Ban Nha'], PT: ['Bồ Đào Nha'], GR: ['Hy Lạp'], CH: ['Thụy Sĩ'], SE: ['Thụy Điển'], NO: ['Na Uy'], DK: ['Đan Mạch'], FI: ['Phần Lan'], BE: ['Bỉ'], AT: ['Áo'], ZA: ['Nam Phi'], IQ: ['Iraq'], BR: ['Brazil'], MX: ['Mexico'], CA: ['Canada'] };
 for (const [cc, list] of Object.entries(VI_NAMES)) if (COUNTRIES[cc]) list.forEach(a => aliasToCc.set(a, cc));
+const MORE_NAMES = {
+  PS: ['עזה', 'غزة', 'गाजा', 'গাজা', 'غزہ'], IR: ['איראן', 'ईरान', 'ইরান', 'ایران'], LB: ['לבנון', 'لبنان'], SY: ['סוריה', 'सीरिया', 'سوریه'], YE: ['תימן', 'یمن'], RU: ['רוסיה', 'रूस', 'রাশিয়া', 'รัสเซีย'],
+  UA: ['אוקראינה', 'यूक्रेन', 'ইউক্রেন', 'ยูเครน'], PK: ['पाकिस्तान', 'পাকিস্তান', 'پاکستان', 'ปากีสถาน'], CN: ['चीन', 'চীন', 'จีน'], AF: ['अफगानिस्तान', 'আফগানিস্তান', 'افغانستان'], BD: ['बांग्लादेश', 'বাংলাদেশ'],
+  NP: ['नेपाल', 'নেপাল'], LK: ['श्रीलंका', 'শ্রীলঙ্কা'], MM: ['म्यांमार', 'মিয়ানমার', 'เมียนมา', 'พม่า'], IL: ['इजरायल', 'ইসরায়েল', 'อิสราเอล', 'ישראל'], IN: ['भारत', 'ভারত', 'อินเดีย', 'मणिपुर'], KH: ['กัมพูชา'], TH: ['ไทย']
+};
+for (const [cc, list] of Object.entries(MORE_NAMES)) if (COUNTRIES[cc]) list.forEach(a => aliasToCc.set(a, cc));
 aliasToCc.delete('Georgia'); aliasToCc.set('Georgia (country)', 'GE'); aliasToCc.set('Tbilisi', 'GE'); aliasToCc.set('Georgian government', 'GE');
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const keys = [...aliasToCc.keys()].sort((a, b) => b.length - a.length);
-const RE = new RegExp('(?<![\\p{L}\\p{N}])(' + keys.map(esc).join('|') + ')(?![\\p{L}\\p{N}])', 'gu');
+const bKeys = keys.filter(k => !NB_RE.test(k)), nbKeys = keys.filter(k => NB_RE.test(k));
+const RE = new RegExp('(?<![\\p{L}\\p{N}])(' + bKeys.map(esc).join('|') + ')(?![\\p{L}\\p{N}])', 'gu');
+const RE_NB = nbKeys.length ? new RegExp('(' + nbKeys.map(esc).join('|') + ')', 'gu') : null;
 
 /** Distinct country codes mentioned in `text`, in order of first appearance. */
 export function detectCountries(text) {
   const out = [];
+  if (RE_NB) for (const m of text.matchAll(RE_NB)) { const cc = aliasToCc.get(m[1]); if (cc && !out.includes(cc)) out.push(cc); }
   for (const m of text.matchAll(RE)) {
     const cc = aliasToCc.get(m[1]);
     if (cc && !out.includes(cc)) out.push(cc);

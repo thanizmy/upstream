@@ -23,7 +23,7 @@
     var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
     return '<span class="pips" style="--k:' + kc(n) + '" title="severity ' + n + ' of 5">' + h + '</span>';
   }
-  var LANGN = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese' };
+  var LANGN = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', th: 'Thai', he: 'Hebrew', fa: 'Persian', ur: 'Urdu', hi: 'Hindi', bn: 'Bengali', it: 'Italian' };
   /** Where the headline comes from: the country's own outlets, its language, and whether other languages back it up. */
   function srcTags(e) {
     var o = '';
@@ -362,7 +362,7 @@
   function baselineDate() { var d = new Date(D.historySince + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 21); return d.toISOString().slice(0, 10); }
   function renderAbout() {
     $('aboutBody').innerHTML =
-      '<p>Upstream gives international ministry staff a quick read on the countries they serve: what is urgent, what is changing, and what to pray for. It reads public RSS and Atom feeds from ' + D.feeds.total + ' news, humanitarian and faith outlets, including local-language outlets in Spanish, French, Portuguese, Arabic, Russian, German, Indonesian, Turkish and Swahili, and refreshes about every three hours.</p>' +
+      '<p>Upstream gives international ministry staff a quick read on the countries they serve: what is urgent, what is changing, and what to pray for. It reads public RSS and Atom feeds from ' + D.feeds.total + ' news, humanitarian and faith outlets, including ' + (D.feeds.local || 0) + ' local outlets writing in ' + ((D.feeds.langs || ['en']).length - 1) + ' other languages (Spanish, French, Portuguese, Arabic, Russian, Chinese, Japanese, Korean, Hindi, Persian, Vietnamese and more), and refreshes about every three hours.</p>' +
       '<h3>How a country gets its level</h3><ol>' +
       '<li><b>Unique events, not articles.</b> Reports about the same incident are grouped into one event, so a country with 100 articles on one flood does not outrank a country with one new crisis.</li>' +
       '<li><b>Urgency-weighted.</b> An event counts 1, 3, 9, 27 or 81 by severity (1 to 5). One severity-5 event outweighs ten severity-2 events. A single-source event is capped at severity 4.</li>' +
