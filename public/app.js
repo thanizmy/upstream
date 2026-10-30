@@ -157,7 +157,7 @@
     if (!M) { $('movedBasis').textContent = ''; $('moved').innerHTML = '<div class="empty list">Monthly movement compares the last 15 days with the 15 before. It appears once Upstream has 28 days of history (' + D.spanDays + ' so far). Switch to Weekly to see movement now.</div>'; return; }
     $('movedBasis').textContent = M.basis;
     function rows(arr, cls) {
-      return arr.length ? arr.map(function (r) {
+      return arr.length ? arr.slice(0, 4).map(function (r) {
         return '<a class="mv" href="#c/' + r.cc + '"><span><span class="fl">' + (r.fl || '') + '</span> <b>' + esc(r.k) + '</b></span><span class="' + cls + '">' + ((r.isNew ? 'new' : (r.pct > 500 ? '500%+' : (r.pct > 0 ? '+' : '') + r.pct + '%'))) + '</span></a>';
       }).join('') : '<p class="flat" style="margin:10px 0 0">None this period.</p>';
     }
@@ -165,10 +165,10 @@
       var up = t.pct == null || t.pct > 0;
       return '<a class="mv"><span><b>' + esc(TH[t.th] || t.th) + '</b> <span class="flat">· ' + t.cur + ' a day</span></span><span class="' + (up ? 'up' : 'down') + '">' + (t.pct == null ? 'new' : (t.pct > 0 ? '+' : '') + (Math.abs(t.pct) > 500 ? '500+' : t.pct) + '%') + '</span></a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No theme moved sharply.</p>';
-    var sud = M.sudden.length ? M.sudden.map(function (e) {
+    var sud = M.sudden.length ? M.sudden.slice(0, 4).map(function (e) {
       return '<a class="mv sd" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat">' + esc(e.h) + '</span></span>' + pips(e.s) + '</a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No new serious events in the last 48 hours.</p>';
-    $('moved').innerHTML = '<div class="cells c2"><div class="cell"><span class="k">Rising fastest</span>' + rows(M.up, 'up') + '</div>' +
+    $('moved').innerHTML = '<div class="cells c4 moved"><div class="cell"><span class="k">Rising fastest</span>' + rows(M.up, 'up') + '</div>' +
       '<div class="cell"><span class="k">Quietening</span>' + rows(M.down, 'down') + '</div>' +
       '<div class="cell"><span class="k">Sudden: new serious events, last 48 hours</span>' + sud + '</div>' +
       '<div class="cell"><span class="k">Themes shifting</span>' + th + '</div></div>';
