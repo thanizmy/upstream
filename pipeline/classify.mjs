@@ -14,6 +14,9 @@ const DISPLACE = R('\\b(refugees?|displaced|displacement|fleeing|flee(s)?|asylum
 const UNREST = R('\\b(protest(s|ers)?|riot(s|ers)?|unrest|crackdown|curfew|state of emergency|martial law|demonstrat\\w+|tear gas|strike(s)?|uprising|opposition leader|election violence|disputed election|junta)\\b');
 const POLITICS = R('\\b(election|parliament|minister|president|prime minister|talks|sanctions|summit|treaty|ceasefire|negotiat\\w+|diplomat\\w*|government|vote|referendum)\\b');
 const HARM_STRONG = R('\\b(emergency|crisis|catastrophe|devastat\\w+|collapse|humanitarian|urgent|warns?|appeals? for)\\b');
+// a declared emergency or a clearly large disaster; "killed" with no number and no such signal stays at severity 3
+const EMERGENCY = R('\\b(state of emergency|declares? (a )?(national |state of )?(emergency|disaster)|catastroph\\w+|devastat\\w+|humanitarian (crisis|emergency)|thousands (displaced|homeless|evacuated)|mass evacuation)\\b');
+const bigQuake = t => { const m = t.match(/\b(?:magnitude|M)\s?(\d(?:\.\d)?)\b/); return !!m && parseFloat(m[1]) >= 6; };
 const NUM_DEAD = /\b(\d{1,3}(?:,\d{3})*|\d+)\s+(?:people\s+|civilians\s+|children\s+|worshippers\s+|soldiers\s+)?(?:have been\s+|were\s+|are\s+)?(?:killed|dead|dies|died|lives lost|fatalities)\b/i;
 const DEAD_NUM = /\b(?:kill(?:s|ed|ing)|leaves?|left|claims?)\s+(?:at least\s+|over\s+|more than\s+)?(\d{1,3}(?:,\d{3})*|\d+)\b/i;
 const WORDNUM = { dozens: 24, scores: 40, hundreds: 200, thousands: 2000 };
@@ -50,9 +53,9 @@ export function classify(title, summary = '') {
   if (MASS.test(headline)) s = 5;
   else if (n >= 100) s = 5;
   else if (n >= 10) s = 4;
-  else if (KILL.test(headline) && (VIOLENCE.test(t) || DISASTER.test(t) || n > 0)) s = 4;
+  else if (KILL.test(headline) && (VIOLENCE.test(t) || DISASTER.test(t) || n > 0)) s = 3; // fewer than 10 dead, or no number: severity 3
   else if (th === 'persecution' && PERSECUTE_HARM.test(headline)) s = 4;
-  else if (DISASTER.test(headline) && (HARM_STRONG.test(t) || KILL.test(t) || /\b(magnitude|\d\.\d)\b/.test(t))) s = 4;
+  else if (DISASTER.test(headline) && (EMERGENCY.test(t) || bigQuake(t))) s = 4;
   else if (HEALTH.test(headline)) s = 4;
   else if (HUNGER.test(headline)) s = 4;
   else if (VIOLENCE.test(headline)) s = 3;

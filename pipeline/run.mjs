@@ -12,7 +12,13 @@ const OUT = process.env.OUT_DIR || 'public/data';
 const NOW = Date.now();
 const DAY = 864e5;
 const KEEP_DAYS = 70;
-const WEIGHT = [0, 1, 3, 9, 27, 81]; // severity -> weight; one severity-5 event outweighs ten severity-2 events
+// Scoring model v2. Severity is impact-based and the same for every country; only events of severity 3 to 5 carry the urgency score.
+//   S = 8*(1+ln n3) + 30*(1+ln n4) + 100*(1+ln n5)   (a tier with no events adds nothing)
+// Weekly level from fixed thresholds on S (10 / 30 / 100); the monthly level uses four times those thresholds on the sum of four weekly scores.
+const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 2;
+const T3_CAP = 25; // severity-3 events alone can reach Elevated but never High: many minor incidents are not instability
+const THRESH = [10, 30, 100];
+const bandOf = (S, k = 1) => S <= 0 ? 1 : S < THRESH[0] * k ? 2 : S < THRESH[1] * k ? 3 : S < THRESH[2] * k ? 4 : 5;
 const AUTH_HOSTS = /(^|\.)(un\.org|who\.int|gdacs\.org|usgs\.gov|reliefweb\.int|icrc\.org)$/;
 const FEED_HINT = { 'Premium Times': 'NG', 'Punch Nigeria': 'NG', 'Daily Nation': 'KE', Dawn: 'PK', 'Japan Times': 'JP', 'Taipei Times': 'TW',
   'Times of Israel': 'IL', 'Jerusalem Post': 'IL', 'Kyiv Independent': 'UA', Rappler: 'PH', Irrawaddy: 'MM', 'Mexico News Daily': 'MX',
@@ -64,6 +70,11 @@ try {
 } catch (e) { console.warn('history load failed, starting fresh:', e.message); }
 hist.items = hist.items.filter(i => !i.t.includes('�')); // drop headlines stored before charset decoding was added
 hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored before charset handling was fixed
+for (const i of hist.items) if (i.v !== MODEL_V) {
+  const r = i.l ? (supports(i.l) ? classifyLocal(i.t, '', i.l) : { s: i.s, th: i.th }) : classify(i.t, '');
+  i.s = r.s; i.th = r.th; i.v = MODEL_V;
+}
+hist.items = hist.items.filter(i => i.s >= 2);
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
 // ── 2. fetch ─────────────────────────────────────────────────────────────────
@@ -93,7 +104,7 @@ await Promise.all(Array.from({ length: 12 }, async () => {
         const lang = f.lang || 'en';
         const { s, th } = lang === 'en' ? classify(it.title, it.summary) : classifyLocal(it.title, it.summary, lang);
         if (s < 2) continue;
-        byId.set(id, { id, t: it.title, d: it.t, u: it.u, f: f.name, h: hostOf(it.u), cc, s, th, ...(lang !== 'en' ? { l: lang } : {}), ...(s >= 4 && it.img ? { i: it.img } : {}) });
+        byId.set(id, { id, t: it.title, d: it.t, u: it.u, f: f.name, h: hostOf(it.u), cc, s, th, v: MODEL_V, ...(lang !== 'en' ? { l: lang } : {}), ...(s >= 4 && it.img ? { i: it.img } : {}) });
         fresh++; used++;
       }
       health.push({ name: f.name, ok: true, items: items.length, used });
@@ -155,12 +166,12 @@ for (const [cc, list] of Object.entries(perCountry)) {
     const conf = [...outlets].reduce((n, h) => n + (AUTH_HOSTS.test(h) ? 2 : 1), 0);
     const smax = Math.max(...c.items.map(x => x.s));
     let s = smax;
-    if (s === 5 && conf < 2) s = 4; // one source alone cannot make a severity-5 event
+    if (s >= 4 && conf < 2) s = 3; // a serious event reported by one outlet counts at severity 3 until a second outlet confirms it
     const rep = c.items.filter(x => x.s === smax).sort((a, b) => a.d - b.d)[0];
     const themes = {}; c.items.forEach(x => { themes[x.th] = (themes[x.th] || 0) + 1; });
     const localHosts = new Set(c.items.filter(x => feedHome[x.f] === cc).map(x => x.h));
     const langs = [...new Set(c.items.map(x => x.l || 'en'))].sort();
-    return { id: hash(cc + rep.id), cc, h: rep.t, u: rep.u, s, th: Object.entries(themes).sort((a, b) => b[1] - a[1])[0][0],
+    return { id: hash(cc + rep.id), cc, h: rep.t, u: rep.u, s, ...(smax !== s ? { s0: smax } : {}), th: Object.entries(themes).sort((a, b) => b[1] - a[1])[0][0],
       d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), ...(localHosts.size ? { lo: localHosts.size } : {}), ...(langs.length > 1 ? { lg: langs } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
       hosts: [...outlets], T: rep.T,
       items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s, ...(x.l ? { l: x.l } : {}) })) };
@@ -174,7 +185,24 @@ const fullWeeks = Math.floor((NOW - sinceMs) / (7 * DAY)) - 1;
 const baselineReady = fullWeeks >= 2;
 
 const spanDays = Math.max(1, Math.round((NOW - sinceMs) / DAY)); // days since this deployment began collecting
-const sumW = (evs, from, to) => evs.filter(e => e.d > NOW - to * DAY && e.d <= NOW - from * DAY).reduce((n, e) => n + WEIGHT[e.s], 0);
+/** The tier score S of a set of events. A single outlet's solo severity-3 reports are capped, so one prolific feed cannot inflate a country. */
+function tierScore(list) {
+  const n = { 3: 0, 4: 0, 5: 0 }, solo = {};
+  for (const e of list) {
+    if (e.s < 3) continue;
+    if (e.s === 3 && e.o === 1) { const h = e.hosts[0]; solo[h] = (solo[h] || 0) + 1; if (solo[h] > SOLO_CAP) continue; }
+    n[e.s]++;
+  }
+  return [3, 4, 5].reduce((S, t) => n[t] ? S + Math.min(t === 3 ? T3_CAP : Infinity, TW[t] * (1 + Math.log(n[t]))) : S, 0);
+}
+const sumW = (evs, from, to) => tierScore(evs.filter(e => e.d > NOW - to * DAY && e.d <= NOW - from * DAY));
+const weekScores = evs => [0, 1, 2, 3].map(k => sumW(evs, 7 * k, 7 * (k + 1)));
+/** How a country normally scores: median and spread of ln(1+S) over its recent full weeks (needs two or more). */
+function ownBase(evs) {
+  const m = Math.min(8, fullWeeks); if (m < 2) return null;
+  const L = Array.from({ length: m }, (_, k) => Math.log(1 + sumW(evs, 7 * (k + 1), 7 * (k + 2))));
+  const med = median(L); return { m, med, mad: median(L.map(x => Math.abs(x - med))) };
+}
 
 const THEME_PRAYER = {
   conflict: ['Pray for peace and protection for civilians in {c}.', 'Pray for those caught in the violence in {c}, and for wisdom among leaders seeking peace.'],
@@ -190,24 +218,19 @@ const THEME_PRAYER = {
 const SPAN = 30;
 const dayList = Array.from({ length: SPAN }, (_, i) => dayKey(NOW - (SPAN - 1 - i) * DAY));
 
-/** Stats for one country over the last `days` days. */
+/** Stats for one country over the last `days` days. z is the surge against the country's own normal (weekly view only). */
 function windowStats(evs, days, z) {
   const w = evs.filter(e => e.d > NOW - days * DAY);
   const cnt = [0, 0, 0, 0, 0, 0]; w.forEach(e => cnt[e.s]++);
   const th = {}; w.forEach(e => { th[e.th] = (th[e.th] || 0) + 1; });
   const hosts = new Set(); w.forEach(e => e.hosts.forEach(h => hosts.add(h)));
-  const s5 = w.filter(e => e.s === 5 && e.conf >= 2).length;
-  let band = w.length ? 2 : 1;
+  const weeks = weekScores(evs);
+  let S, band, lift = false;
   if (days <= 7) {
-    if (cnt[3] + cnt[4] + cnt[5] >= 3 || (z != null && z > 1)) band = 3;
-    if (cnt[4] + cnt[5] >= 1 || (z != null && z > 2)) band = 4;
-    if (s5 >= 1 || (z != null && z > 3)) band = 5;
-  } else { // monthly: a single severe event is common over 30 days, so the bar is higher
-    if (cnt[3] + cnt[4] + cnt[5] >= 6) band = 3;
-    if (cnt[4] + cnt[5] >= 2) band = 4;
-    if (s5 >= 1 && cnt[4] + cnt[5] >= 3) band = 5;
-  }
-  const cur = sumW(evs, 0, days);
+    S = Math.max(weeks[0], weeks[1] * 0.5, weeks[2] * 0.25); // earlier weeks fade out gradually, so a country eases down after serious events stop
+    band = bandOf(S);
+    if (z != null && z >= 2.5 && weeks[0] >= TW[3] && band < 5) { band++; lift = true; } // far above its own normal: one step up, never down
+  } else { S = weeks.reduce((x, y) => x + y, 0); band = bandOf(S, 4); }
   // change: weekly compares with the week before (or the last 3 days with the 4 before while history is short); monthly compares 15 vs 15 days
   let chg = null;
   const rate = (a, b) => sumW(evs, a, b) / (b - a);
@@ -216,7 +239,8 @@ function windowStats(evs, days, z) {
   else if (spanDays >= 28) chg = mk(rate(0, 15), rate(15, 30), '15d');
   if (chg) chg.dir = chg.isNew || (chg.pct != null && chg.pct > 10) ? 'up' : chg.pct != null && chg.pct < -10 ? 'down' : 'flat';
   return {
-    ev: w.length, rep: w.reduce((n, e) => n + e.r, 0), src: hosts.size, load: +Math.log(1 + cur).toFixed(2), cur,
+    ev: w.length, rep: w.reduce((n, e) => n + e.r, 0), src: hosts.size, S: +S.toFixed(1), load: +Math.log(1 + S).toFixed(2), cur: +S.toFixed(1),
+    weeks: weeks.map(x => +x.toFixed(1)), peak: bandOf(Math.max(...weeks)), lift,
     maxSev: Math.max(0, ...w.map(e => e.s)), band, sev: cnt.slice(1), th, chg
   };
 }
@@ -225,15 +249,17 @@ const topOf = (evs, days, n) => [...evs].filter(e => e.last > NOW - days * DAY)
   .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last).slice(0, n)
   .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src, ...tg(e) }));
 
+const bases = {};
+for (const [cc, evs] of Object.entries(events)) if (evs.some(e => e.d > NOW - 30 * DAY)) { const b = ownBase(evs); if (b) bases[cc] = b; }
+const gMed = median(Object.values(bases).map(b => b.med).concat(0)), gMad = median(Object.values(bases).map(b => b.mad).concat(0));
 const countries = [];
 for (const [cc, evs] of Object.entries(events)) {
   if (!evs.some(e => e.d > NOW - 30 * DAY)) continue;
-  const cur7 = sumW(evs, 0, 7), load7 = Math.log(1 + cur7);
-  let z = null;
-  if (baselineReady) {
-    const weeks = Array.from({ length: Math.min(8, fullWeeks) }, (_, k) => Math.log(1 + sumW(evs, 7 * (k + 1), 7 * (k + 2))));
-    const med = median(weeks), mad = median(weeks.map(x => Math.abs(x - med)));
-    z = +((load7 - med) / Math.max(1.4826 * mad, 0.35)).toFixed(2);
+  // surge: this week against the country's own normal, blended toward the world typical value while its own history is short
+  let z = null; const b = bases[cc];
+  if (baselineReady && b) {
+    const K0 = 3, med = (b.m * b.med + K0 * gMed) / (b.m + K0), mad = (b.m * b.mad + K0 * gMad) / (b.m + K0);
+    z = +((Math.log(1 + sumW(evs, 0, 7)) - med) / Math.max(1.4826 * mad, 0.35)).toFixed(2);
   }
   const w7 = windowStats(evs, 7, z), w30 = windowStats(evs, 30, null);
   w7.z = z; w7.top = topOf(evs, 14, 8); w30.top = topOf(evs, 30, 12);
@@ -248,7 +274,7 @@ for (const [cc, evs] of Object.entries(events)) {
     prayer: { text: tpl[hash(cc + dayKey(NOW)).charCodeAt(0) % tpl.length].replace('{c}', c.k), eventId: lead.id, th: lead.th }
   });
 }
-const rankBy = win => countries.slice().sort((a, b) => b[win].band - a[win].band || b[win].load - a[win].load || (b.w7.z ?? 0) - (a.w7.z ?? 0)).map(c => c.cc);
+const rankBy = win => countries.slice().sort((a, b) => b[win].band - a[win].band || b[win].S - a[win].S || (b.w7.z ?? 0) - (a.w7.z ?? 0)).map(c => c.cc);
 const r7 = rankBy('w7'), r30 = rankBy('w30');
 countries.forEach(c => { c.w7.rank = r7.indexOf(c.cc) + 1; c.w30.rank = r30.indexOf(c.cc) + 1; });
 countries.sort((a, b) => a.w7.rank - b.w7.rank);
@@ -296,7 +322,7 @@ const moved = {
   w7: fullWeeks >= 1 ? movement(7, 14, 'this week vs last week') : movement(3, 7, 'the last 3 days vs the 4 before'),
   w30: spanDays >= 28 ? movement(15, 30, 'the last 15 days vs the 15 before') : null
 };
-const heldBack = (days) => allEv.filter(e => e.s >= 4 && e.conf < 2 && e.last > NOW - days * DAY).length;
+const heldBack = (days) => allEv.filter(e => (e.s0 || e.s) >= 4 && e.conf < 2 && e.last > NOW - days * DAY).length;
 const sources = new Set(items.map(i => i.h)).size;
 const kpi = days => {
   const k = days === 7 ? 'w7' : 'w30';

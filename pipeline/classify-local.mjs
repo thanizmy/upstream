@@ -174,10 +174,9 @@ export function classifyLocal(title, summary, lang) {
   if (r.mass.test(h)) s = 5;
   else if (n >= 100 && n < 100000 && r.kill.test(h)) s = 5;
   else if (n >= 10 && r.kill.test(h)) s = 4;
-  else if (r.kill.test(h) && (r.violence.test(t) || r.disaster.test(t))) s = 4;
+  else if (r.kill.test(h) && (r.violence.test(t) || r.disaster.test(t))) s = 3; // fewer than 10 dead, or no number
   else if (th === 'persecution' && (r.harm.test(h) || r.kill.test(h))) s = 4;
-  else if (r.disaster.test(h) && r.kill.test(t)) s = 4;
-  else if (r.health.test(h) || r.hunger.test(h)) s = 4;
+    else if (r.health.test(h) || r.hunger.test(h)) s = 4;
   else if (r.violence.test(h) || r.disaster.test(h) || r.displace.test(h) || r.unrest.test(h)) s = 3;
   else if (th === 'persecution') s = 3;
   else if (r.politics.test(h)) s = 2;

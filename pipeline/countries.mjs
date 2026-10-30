@@ -5,7 +5,7 @@ const raw = require('world-countries');
 
 // Domestic US news is excluded on purpose: the product watches international contexts, and the
 // largest feeds are US domestic stories that would otherwise dominate every ranking.
-const EXCLUDE = new Set(['US', 'UM', 'PR', 'GU', 'VI', 'AS', 'MP']);
+const EXCLUDE = new Set(['UM', 'PR', 'GU', 'VI', 'AS', 'MP']);
 const NO_CAPITAL = new Set(['Georgetown', 'Victoria', 'Kingston', 'Hamilton', 'Jamestown', 'Road Town', 'Washington, D.C.',
   'Charlotte Amalie', 'Saint-Denis', 'Male', 'Bern', 'Nassau', 'Apia', 'Majuro', 'Palikir', 'Roseau', 'Valletta', 'Doha', 'Lome']);
 const BAD_ALIAS = new Set(['Guinea', 'Georgia', 'Dominica', 'Jersey', 'Man', 'Niue', 'Chad']);
@@ -49,6 +49,7 @@ for (const c of raw) {
   if (EXCLUDE.has(cc)) continue;
   if (!(c.independent || c.unMember || ['PS', 'XK', 'TW', 'HK'].includes(cc))) continue;
   COUNTRIES[cc] = { k: c.name.common, cc, fl: c.flag, ll: c.latlng, region: c.region, sub: c.subregion };
+  if (cc === 'US') continue; // the US is placed only by where an event happens (US_PLACES below), never by 'American' or by being named as an actor
   addAlias(c.name.common, cc);
   (c.altSpellings || []).forEach(a => { if (a.length > 4 && !/^[A-Z]{2,4}$/.test(a)) addAlias(a, cc); });
   (c.capital || []).forEach(a => { if (!NO_CAPITAL.has(a)) addAlias(a, cc); });
@@ -74,6 +75,16 @@ const MORE_NAMES = {
   NP: ['नेपाल', 'নেপাল'], LK: ['श्रीलंका', 'শ্রীলঙ্কা'], MM: ['म्यांमार', 'মিয়ানমার', 'เมียนมา', 'พม่า'], IL: ['इजरायल', 'ইসরায়েল', 'อิสราเอล', 'ישראל'], IN: ['भारत', 'ভারত', 'อินเดีย', 'मणिपुर'], KH: ['กัมพูชา'], TH: ['ไทย']
 };
 for (const [cc, list] of Object.entries(MORE_NAMES)) if (COUNTRIES[cc]) list.forEach(a => aliasToCc.set(a, cc));
+// The US counts only when an event happens there: a state or city is named, or the text says "in the United States". Being named as an actor
+// ("US strikes...", "Trump says...") does not place an event in the US.
+const US_PLACES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+  'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+  'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+  'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'West Virginia', 'Wisconsin', 'Wyoming', 'Washington state', 'Washington State', 'Washington, D.C.', 'Washington DC',
+  'New York City', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'Seattle', 'Denver', 'Boston', 'Detroit', 'Nashville',
+  'Las Vegas', 'Baltimore', 'Milwaukee', 'Minneapolis', 'Atlanta', 'Miami', 'New Orleans', 'Pittsburgh', 'Cleveland', 'St. Louis', 'Kansas City', 'Tampa', 'Orlando',
+  'Sacramento', 'Oakland', 'San Francisco', 'Memphis', 'Louisville', 'Salt Lake City', 'Honolulu', 'Anchorage', 'Brooklyn', 'Manhattan'];
+for (const p of US_PLACES) aliasToCc.set(p, 'US');
 aliasToCc.delete('Georgia'); aliasToCc.set('Georgia (country)', 'GE'); aliasToCc.set('Tbilisi', 'GE'); aliasToCc.set('Georgian government', 'GE');
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -86,8 +97,10 @@ const RE_NB = nbKeys.length ? new RegExp('(' + nbKeys.map(esc).join('|') + ')', 
 // Names that are also ordinary words or first names are only counted with a clue that a place is meant ("in Chad", "Chad's army"), not on their own.
 const CONTEXT = { Chad: 'TD', Guinea: 'GN', Dominica: 'DM' };
 const CONTEXT_RE = /(?:\b(?:in|from|to|across|near|into|of|for|with|and|between|by|over|against)\s+|^)(Chad|Guinea|Dominica)(?=['\u2019]s\b|[\s,.:;!?)]|$)(?!\s+[A-Z][a-z])/g;
+const US_CTX = /\b(?:in|across|throughout|within|inside)\s+the\s+(?:United States|U\.S\.|US)(?![\w.])/;
 export function detectCountries(text) {
   const out = [];
+  if (US_CTX.test(text)) out.push('US');
   for (const m of text.matchAll(CONTEXT_RE)) { const cc = CONTEXT[m[1]]; if (COUNTRIES[cc] && !out.includes(cc)) out.push(cc); }
   if (RE_NB) for (const m of text.matchAll(RE_NB)) { const cc = aliasToCc.get(m[1]); if (cc && !out.includes(cc)) out.push(cc); }
   for (const m of text.matchAll(RE)) {

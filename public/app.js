@@ -244,7 +244,7 @@
     svg.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; } });
     var placed = D.countries.filter(function (c) { return W(c).ev; }).length;
     $('mapStat').textContent = placed + ' countries with reports · ' + winLabel();
-    $('legendKey').innerHTML = '<span class="k">Level</span>' + [5, 4, 3, 2, 1].map(function (b) { return '<b><i style="--k:' + kc(b) + '"></i>' + BAND[b] + '</b>'; }).join('') + '<b><i style="--k:var(--sink);outline:1px solid var(--rule)"></i>Not tracked (incl. US)</b><small>Dots mark small countries; size shows events.</small>';
+    $('legendKey').innerHTML = '<span class="k">Level</span>' + [5, 4, 3, 2, 1].map(function (b) { return '<b><i style="--k:' + kc(b) + '"></i>' + BAND[b] + '</b>'; }).join('') + '<b><i style="--k:var(--sink);outline:1px solid var(--rule)"></i>Not tracked</b><small>Dots mark small countries; size shows events.</small>';
     // regional data table
     var R = {}; D.countries.forEach(function (c) { var w = W(c); if (!w.ev) return; var r = R[c.region] = R[c.region] || { n: 0, hot: 0, ev: 0, rep: 0 }; r.n++; r.ev += w.ev; r.rep += w.rep; if (w.band >= 4) r.hot++; });
     $('regions').innerHTML = '<thead><tr><th>Region</th><th class="n">Countries</th><th class="n">High+</th><th class="n">Events</th></tr></thead><tbody>' +
@@ -282,7 +282,7 @@
   function renderMethod() {
     var m = [['Sources', fmt(D.feeds.total), 'Public news, humanitarian and faith feeds, in English and in local languages (' + (D.feeds.langs || ['en']).length + ' languages, ' + (D.feeds.local || 0) + ' local-language feeds). A feed enters only if it parses and published within 45 days. ' + D.feeds.ok + ' responded on the last refresh.'],
       ['Window', view === 'w7' ? '7 days' : '30 days', fmt(D.tracked) + ' tagged reports are held. Nothing older is substituted to pad a short list.'],
-      ['Level', 'unique events', 'Reports about one incident count once; events weigh 1, 3, 9, 27 or 81 by severity; each country is read against its own history once three weeks exist.']];
+      ['Level', 'serious events', 'Reports about one incident count once; only serious events (severity 3 to 5) build the score, read against fixed thresholds. After about three weeks a jump above its own normal can lift a country one step.']];
     $('method').innerHTML = m.map(function (r) { return '<div class="cell"><span class="k">' + r[0] + '</span><h3>' + r[1] + '</h3><p>' + r[2] + '</p></div>'; }).join('');
   }
   function renderBrief() {
@@ -294,6 +294,9 @@
     var c = byCc[cc], el = $('profile');
     if (!c) { el.innerHTML = '<div class="hero"><p class="eyebrow">Country</p><h1>No recent reports for this country.</h1><p><a class="btn ghost" href="#brief">Back to the brief</a></p></div>'; return; }
     var w7 = c.w7, w30 = c.w30, w = W(c), inPray = pray().countries.indexOf(cc) >= 0, followed = watchList().list.indexOf(cc) >= 0;
+    var zv = w7.z, zTxt = zv == null ? 'building' : (zv > 0 ? '+' : '') + zv.toFixed(1);
+    var scoreP = view === 'w7' ? 'This week ' + fmt(Math.round(w.weeks[0])) + (w.S > w.weeks[0] + 0.5 ? ', plus a fading carry-over from earlier weeks' : '') : 'Sum of the last four weekly scores';
+    var surgeP = zv == null ? 'Needs about three weeks of history' : w7.lift ? 'High enough to lift the level one step' : 'Against its own recent weeks: ' + (zv >= 2.5 ? 'unusually high' : zv <= -1 ? 'calmer than usual' : 'about normal');
     el.innerHTML = '<div class="hero"><p class="eyebrow"><a href="#brief">← Brief</a> · Country report · ' + esc(c.region) + '</p>' +
       '<h1><span class="fl big">' + c.fl + '</span> ' + esc(c.k) + '</h1>' +
       '<div class="acts" style="margin-top:20px"><button class="btn" data-addp="' + cc + '" type="button">' + (inPray ? 'In my prayer space ✓' : 'Add to my prayer space') + '</button>' +
@@ -303,6 +306,11 @@
       '<div class="cell"><span class="k">Level</span><h3>' + BAND[w.band] + '</h3><p>' + pips(w.band) + ' Rank ' + w.rank + ' of ' + D.countries.length + '</p></div>' +
       '<div class="cell"><span class="k">Events · reports</span><h3>' + w.ev + ' · ' + w.rep + '</h3><p>' + w7.ev + ' in 7 days, ' + w30.ev + ' in 30 days</p></div>' +
       '<div class="cell"><span class="k">Outlets · peak severity</span><h3>' + w.src + ' · ' + w.maxSev + '</h3><p>' + (w.thin ? '<span class="thin">thin coverage</span> ' : '') + 'Distinct outlets reporting</p></div>' +
+      '</div>' +
+      '<div class="cells c3 prof">' +
+      '<div class="cell"><span class="k">Score (S)</span><h3>' + fmt(Math.round(w.S)) + '</h3><p>' + scoreP + '</p></div>' +
+      '<div class="cell"><span class="k">Surge vs its own normal</span><h3>' + zTxt + '</h3><p>' + surgeP + '</p></div>' +
+      '<div class="cell"><span class="k">Peak week</span><h3>' + BAND[w.peak] + '</h3><p>Highest of the last four weekly scores: ' + fmt(Math.round(Math.max.apply(null, w.weeks))) + '</p></div>' +
       '</div>' +
       '<p class="lede" id="pSummary"></p>' +
       '<div class="prayer big">' + esc(c.prayer.text) + '</div>' +
@@ -390,18 +398,19 @@
       '<p>Upstream gives international ministry staff a quick read on the countries they serve: what is urgent, what is changing, and what to pray for. It reads public RSS and Atom feeds from ' + D.feeds.total + ' news, humanitarian and faith outlets, including ' + (D.feeds.local || 0) + ' local outlets writing in ' + ((D.feeds.langs || ['en']).length - 1) + ' other languages (Spanish, French, Portuguese, Arabic, Russian, Chinese, Japanese, Korean, Hindi, Persian, Vietnamese and more), and refreshes about every three hours.</p>' +
       '<h3>How a country gets its level</h3><ol>' +
       '<li><b>Unique events, not articles.</b> Reports about the same incident are grouped into one event, so a country with 100 articles on one flood does not outrank a country with one new crisis.</li>' +
-      '<li><b>Urgency-weighted.</b> An event counts 1, 3, 9, 27 or 81 by severity (1 to 5). One severity-5 event outweighs ten severity-2 events. A single-source event is capped at severity 4.</li>' +
-      '<li><b>Compared with the country itself.</b> Once about three weeks of history exist, each country is compared with its own recent weeks, so ordinarily busy countries are not flagged just for being busy.</li></ol>' +
-      '<table><tr><th>Level</th><th>Weekly rule</th></tr><tr><td>Critical</td><td>A severity-5 event confirmed by two sources, or far above its own normal</td></tr><tr><td>High</td><td>A severity-4 event, or well above its normal</td></tr><tr><td>Elevated</td><td>Three or more severity-3 events, or above its normal</td></tr><tr><td>Routine</td><td>Some reporting, nothing serious</td></tr><tr><td>Quiet</td><td>No recent reporting</td></tr></table>' +
-      '<p>The monthly view uses higher bars, because over 30 days almost every country has one bad day: High needs two serious events, Critical a confirmed severity-5 event plus two more serious ones.</p>' +
+      '<li><b>Impact-based severity, the same for every country.</b> Severity 3 is a few casualties or a notable disruption; 4 is ten or more dead or a declared emergency; 5 is a hundred or more dead or a mass atrocity. "Killed" with no number counts as 3. A severity 4 or 5 event reported by only one outlet counts as 3 until a second outlet confirms it.</li>' +
+      '<li><b>Only serious events build the score.</b> Score S = 8 x (1 + ln n3) + 30 x (1 + ln n4) + 100 x (1 + ln n5), where n is the number of events at that severity. More events of one kind add less and less, so sheer volume cannot take over.</li>' +
+      '<li><b>Fixed thresholds.</b> The level is read from S and is not ranked against other countries, so many countries can be Critical at the same time.</li></ol>' +
+      '<table><tr><th>Level</th><th>Weekly score S</th><th>Monthly (4 x)</th></tr><tr><td>Critical</td><td>100 or more (one confirmed mass-casualty event is enough)</td><td>400 or more</td></tr><tr><td>High</td><td>30 to 100</td><td>120 to 400</td></tr><tr><td>Elevated</td><td>10 to 30</td><td>40 to 120</td></tr><tr><td>Routine</td><td>below 10</td><td>below 40</td></tr><tr><td>Quiet</td><td>no severity 3 or higher events</td><td>none</td></tr></table>' +
+      '<p>The weekly level fades gradually: half of the score from last week and a quarter from the week before still count, so a country eases down after serious events stop. The monthly score adds up the four weekly scores. Once about three weeks of history exist, a week far above a country\'s own normal can lift its level one step; the comparison never lowers a level.</p>' +
       '<h3>Weekly and monthly</h3><p>Use the Weekly / Monthly switch at the top of the Brief. Monthly figures cover the last 30 days. Upstream began collecting ' + esc(D.historySince) + ', so 30-day change and the own-baseline comparison fill in over time.</p>' +
       '<h3>Your countries and the default five</h3><p>Until you pick your own list, the top shows the five most urgent countries at the moment you open it. Your list and prayer space are stored in this browser only.</p>' +
       '<h3>What it cannot do</h3><ul><li>Severity comes from keyword rules, not a person reading the story. Expect misses and false alarms.</li>' +
       '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, and its link opens an English machine translation (an Original link sits beside it); <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
       '<li>A quiet country may only be poorly covered by the feeds. Absence of news is not safety.</li>' +
-      '<li>Domestic US news is left out on purpose; this tracks international contexts.</li>' +
+      '<li>The US is counted only when an event happens there: a state or city is named, or the text says in the United States. Being named as an actor, as in US strikes, does not place an event in the US.</li>' +
       '<li>Country detection reads place names and nationalities in headlines. Headlines that name no place are skipped.</li>' +
-      '<li>' + (D.baselineReady ? 'Own-baseline comparison is active.' : 'History is still being collected, so levels use the severity rules only until about ' + baselineDate() + '.') + '</li></ul>' +
+      '<li>' + (D.baselineReady ? 'Own-baseline comparison is active.' : 'History is still being collected, so the own-normal lift starts about ' + baselineDate() + '.') + '</li></ul>' +
       '<h3>Sources</h3><p>' + D.feeds.ok + ' of ' + D.feeds.total + ' feeds responded on the last refresh. <a href="data/health.json" target="_blank" rel="noopener">Feed health</a> · <a href="data/brief.json" target="_blank" rel="noopener">Raw data</a> · <a href="https://github.com/thanizmy/upstream" target="_blank" rel="noopener">Code</a>.</p>' +
       '<p>This is a demo. <a href="https://github.com/thanizmy/upstream/issues/new?title=Feedback%3A%20&labels=feedback" target="_blank" rel="noopener">Tell us what to fix</a>.</p>';
   }
@@ -550,7 +559,7 @@
     $('region').innerHTML = '<option value="">All regions</option>' + Object.keys(regions).sort().map(function (r) { return '<option>' + esc(r) + '</option>'; }).join('');
     var age = (Date.now() - new Date(D.generated)) / 36e5, bn = $('banner'), msg = '';
     if (age > 12) { msg = 'This data is ' + Math.round(age) + ' hours old; the latest refresh may have failed.'; bn.className = 'banner warn'; }
-    else if (!D.baselineReady) { msg = 'Demo note: Upstream is still collecting history. Levels use severity rules only until about ' + baselineDate() + ', after which each country is compared with its own normal.'; }
+    else if (!D.baselineReady) { msg = 'Demo note: Upstream is still collecting history. Levels use the severity score only until about ' + baselineDate() + ', after which a jump above a country own normal can lift its level one step.'; }
     if (msg) { bn.textContent = msg; bn.hidden = false; }
     renderBrief(); renderAbout(); route();
     fetch('world.json').then(function (r) { return r.json(); }).then(function (j) { world = j; renderMap(); }).catch(function () { $('map').innerHTML = '<div class="empty">The map could not be loaded.</div>'; });
