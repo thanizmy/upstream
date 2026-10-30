@@ -189,7 +189,7 @@
     $('movedBasis').textContent = M.basis;
     function rows(arr, cls) {
       return arr.length ? arr.slice(0, 4).map(function (r) {
-        return '<a class="mv" href="#c/' + r.cc + '"><span><span class="fl">' + (r.fl || '') + '</span> <b>' + esc(r.k) + '</b></span><span class="' + cls + '">' + ((r.isNew ? 'new' : (r.pct > 500 ? '500%+' : (r.pct > 0 ? '+' : '') + r.pct + '%'))) + '</span></a>';
+        return '<a class="mv" href="#c/' + r.cc + '"><span><b>' + esc(r.k) + '</b></span><span class="' + cls + '">' + ((r.isNew ? 'new' : (r.pct > 500 ? '500%+' : (r.pct > 0 ? '+' : '') + r.pct + '%'))) + '</span></a>';
       }).join('') : '<p class="flat" style="margin:10px 0 0">None this period.</p>';
     }
     var th = M.themes.length ? M.themes.map(function (t) {
