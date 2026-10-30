@@ -51,6 +51,10 @@ for (const c of raw) {
   (c.altSpellings || []).forEach(a => { if (a.length > 4 && !/^[A-Z]{2,4}$/.test(a)) addAlias(a, cc); });
   (c.capital || []).forEach(a => { if (!NO_CAPITAL.has(a)) addAlias(a, cc); });
   if (c.demonyms?.eng?.m) addAlias(c.demonyms.eng.m, cc);
+  // local-language country names, so Spanish, French, Portuguese, German, Arabic, Russian and Turkish headlines can be placed
+  for (const l of ['spa', 'fra', 'por', 'deu', 'ara', 'rus', 'tur']) {
+    const t = c.translations?.[l]; if (t) { addAlias(t.common, cc); }
+  }
 }
 COUNTRIES.XK ||= { k: 'Kosovo', cc: 'XK', fl: '🇽🇰', ll: [42.67, 21.17], region: 'Europe', sub: 'Southeast Europe' };
 COUNTRIES.PS ||= { k: 'Palestine', cc: 'PS', fl: '🇵🇸', ll: [31.9, 35.2], region: 'Asia', sub: 'Western Asia' };

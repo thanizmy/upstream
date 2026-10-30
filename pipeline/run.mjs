@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { XMLParser } from 'fast-xml-parser';
 import { COUNTRIES, detectCountries } from './countries.mjs';
 import { classify } from './classify.mjs';
+import { classifyLocal, supports } from './classify-local.mjs';
 
 const OUT = process.env.OUT_DIR || 'public/data';
 const NOW = Date.now();
@@ -35,7 +36,10 @@ function linkOf(e) {
 async function fetchFeed(f) {
   const r = await fetch(f.url, { headers: { 'user-agent': 'Mozilla/5.0 UpstreamBot/1.0', accept: 'application/rss+xml,application/atom+xml,application/xml,text/xml,*/*' }, signal: AbortSignal.timeout(20000), redirect: 'follow' });
   if (!r.ok) throw new Error('HTTP ' + r.status);
-  const x = xml.parse(await r.text());
+  const buf = Buffer.from(await r.arrayBuffer());
+  const enc = (/encoding=["']([w-]+)/i.exec(buf.subarray(0, 200).toString('latin1')) || /charset=([w-]+)/i.exec(r.headers.get('content-type') || '') || [])[1] || 'utf-8';
+  let body; try { body = new TextDecoder(enc).decode(buf); } catch { body = buf.toString('utf8'); }
+  const x = xml.parse(body);
   const raw = x?.rss?.channel?.item || x?.feed?.entry || x?.['rdf:RDF']?.item || [];
   const arr = (Array.isArray(raw) ? raw : [raw]).filter(Boolean);
   const out = [];
@@ -57,10 +61,11 @@ try {
     if (r.ok) hist = await r.json();
   } else if (fs.existsSync(path.join(OUT, 'history.json'))) hist = JSON.parse(fs.readFileSync(path.join(OUT, 'history.json'), 'utf8'));
 } catch (e) { console.warn('history load failed, starting fresh:', e.message); }
+hist.items = hist.items.filter(i => !i.t.includes('�')); // drop headlines stored before charset decoding was added
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
 // ── 2. fetch ─────────────────────────────────────────────────────────────────
-const feeds = JSON.parse(fs.readFileSync(new URL('./feeds.json', import.meta.url)));
+const feeds = [...JSON.parse(fs.readFileSync(new URL('./feeds.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local.json', import.meta.url))).filter(f => supports(f.lang))];
 const health = [];
 let inWindow = 0, bad = 0, fresh = 0;
 const queue = [...feeds];
@@ -78,11 +83,12 @@ await Promise.all(Array.from({ length: 12 }, async () => {
         if (byId.has(id)) continue;
         let cc = detectCountries(it.title).slice(0, 3);
         if (!cc.length) cc = detectCountries(it.summary.slice(0, 300)).slice(0, 2);
-        if (!cc.length && FEED_HINT[f.name]) cc = [FEED_HINT[f.name]];
+        if (!cc.length && (f.cc || FEED_HINT[f.name])) cc = [f.cc || FEED_HINT[f.name]];
         if (!cc.length) continue;
-        const { s, th } = classify(it.title, it.summary);
+        const lang = f.lang || 'en';
+        const { s, th } = lang === 'en' ? classify(it.title, it.summary) : classifyLocal(it.title, it.summary, lang);
         if (s < 2) continue;
-        byId.set(id, { id, t: it.title, d: it.t, u: it.u, f: f.name, h: hostOf(it.u), cc, s, th, ...(s >= 4 && it.img ? { i: it.img } : {}) });
+        byId.set(id, { id, t: it.title, d: it.t, u: it.u, f: f.name, h: hostOf(it.u), cc, s, th, ...(lang !== 'en' ? { l: lang } : {}), ...(s >= 4 && it.img ? { i: it.img } : {}) });
         fresh++; used++;
       }
       health.push({ name: f.name, ok: true, items: items.length, used });
@@ -95,7 +101,7 @@ if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keepin
 
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
 // ── 3. cluster into unique events (per country) ──────────────────────────────
-const STOP = new Set('the and for with from that this have has will after over into about than their they were been are was its not but who how what when where why says said say new more news amid as of in on at to by is it be an a or up out off could would may after before during against'.split(' '));
+const STOP = new Set('los las del que con por para una uno sus más como este esta tras sobre entre desde les des une pour dans par sur avec aux est sont plus cette après contre dos das uma mais após der die das und mit von für auf den dem ein eine nach über bei zum zur ist sind the and for with from that this have has will after over into about than their they were been are was its not but who how what when where why says said say new more news amid as of in on at to by is it be an a or up out off could would may after before during against'.split(' '));
 const toks = t => new Set(t.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w)));
 function similar(A, B) {
   let n = 0; for (const w of A) if (B.has(w)) n++;
@@ -127,9 +133,9 @@ for (const [cc, list] of Object.entries(perCountry)) {
     const rep = c.items.filter(x => x.s === smax).sort((a, b) => a.d - b.d)[0];
     const themes = {}; c.items.forEach(x => { themes[x.th] = (themes[x.th] || 0) + 1; });
     return { id: hash(cc + rep.id), cc, h: rep.t, u: rep.u, s, th: Object.entries(themes).sort((a, b) => b[1] - a[1])[0][0],
-      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, img: c.items.map(x => x.i).find(Boolean) || '',
+      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
       hosts: [...outlets], T: rep.T,
-      items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s })) };
+      items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s, ...(x.l ? { l: x.l } : {}) })) };
   });
 }
 
@@ -188,7 +194,7 @@ function windowStats(evs, days, z) {
 }
 const topOf = (evs, days, n) => [...evs].filter(e => e.last > NOW - days * DAY)
   .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last).slice(0, n)
-  .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src }));
+  .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src, ...(e.l ? { l: e.l } : {}) }));
 
 const countries = [];
 for (const [cc, evs] of Object.entries(events)) {
@@ -221,7 +227,7 @@ countries.sort((a, b) => a.w7.rank - b.w7.rank);
 // ── 5. headline figures, stories, movement, gaps ─────────────────────────────
 const allEv = Object.values(events).flat();
 const cname = cc => COUNTRIES[cc].k;
-const slim = e => ({ id: e.id, cc: e.cc, c: cname(e.cc), fl: COUNTRIES[e.cc].fl, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, d: dayKey(e.last), src: e.src });
+const slim = e => ({ id: e.id, cc: e.cc, c: cname(e.cc), fl: COUNTRIES[e.cc].fl, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, d: dayKey(e.last), src: e.src, ...(e.l ? { l: e.l } : {}) });
 function urgentSince(days, n) {
   return allEv.filter(e => e.s >= 4 && e.last > NOW - days * DAY && e.conf >= 2)
     .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last)
@@ -272,7 +278,7 @@ const gaps = countries.filter(c => c.w7.thin).sort((a, b) => b.w7.band - a.w7.ba
 
 const brief = {
   generated: new Date(NOW).toISOString(), baselineReady, historySince: hist.since, fullWeeks, spanDays,
-  feeds: { total: feeds.length, ok: feedsOk, hostsSeen: sources }, itemsInWindow: inWindow, tracked: items.length,
+  feeds: { total: feeds.length, ok: feedsOk, hostsSeen: sources, local: feeds.filter(f => f.lang).length, localOk: health.filter(h => h.ok && feeds.find(f => f.name === h.name)?.lang).length, langs: [...new Set(feeds.map(f => f.lang || 'en'))] }, itemsInWindow: inWindow, tracked: items.length,
   top5: r7.slice(0, 5), kpi: { w7: kpi(7), w30: kpi(30) },
   urgent: { w7: urgentSince(3, 40), w30: urgentSince(30, 60) },
   stories: { w7: stories(7), w30: stories(30) }, moved, gaps, countries
@@ -286,7 +292,7 @@ for (const c of countries) {
   const evs = events[c.cc].filter(e => e.last > NOW - 40 * DAY).sort((a, b) => b.last - a.last);
   fs.writeFileSync(path.join(OUT, 'c', c.cc + '.json'), JSON.stringify({
     cc: c.cc, generated: brief.generated,
-    events: evs.map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), last: dayKey(e.last), src: e.src, items: e.items }))
+    events: evs.map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), last: dayKey(e.last), src: e.src, ...(e.l ? { l: e.l } : {}), items: e.items }))
   }));
 }
 fs.writeFileSync(path.join(OUT, 'brief.json'), JSON.stringify(brief));

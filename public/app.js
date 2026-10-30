@@ -23,6 +23,8 @@
     var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
     return '<span class="pips" style="--k:' + kc(n) + '" title="severity ' + n + ' of 5">' + h + '</span>';
   }
+  var LANGN = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic' };
+  function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Local-language headline, ' + (LANGN[l] || l) + '">' + l.toUpperCase() + ' · local</span>' : ''; }
   function tag(t, quiet) { return t ? '<span class="tag' + (quiet ? ' q' : '') + '">' + esc(t) + '</span>' : ''; }
   function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
   function fmtDate(iso) { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
@@ -75,7 +77,7 @@
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
       '<a class="ev" href="' + esc(u) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
-      '<span class="m">' + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
+      '<span class="m">' + lang(e.l) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
       '<span></span></div>';
   }
   function countryCard(c, o) {
@@ -99,7 +101,7 @@
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
     return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
-      '<span class="m">' + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a><span></span></div>';
+      '<span class="m">' + lang(u.l) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a><span></span></div>';
   }
 
   /* ── brief ─────────────────────────────────────────── */
@@ -162,7 +164,7 @@
       return '<a class="topc" href="' + esc(safeUrl(s.u)) + '" target="_blank" rel="noopener">' +
         (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
         '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.h) + '</h4>' +
-        '<p class="k">' + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
+        '<p class="k">' + lang(s.l) + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
     }).join('') || '<div class="empty">No story has two independent outlets in this window yet.</div>';
   }
   function tipFor(c) {
@@ -232,7 +234,7 @@
     $('gapChips').innerHTML = D.gaps.map(function (cc) { var c = byCc[cc]; return '<a class="chip" href="#c/' + cc + '">' + c.fl + ' ' + esc(c.k) + '</a>'; }).join('');
   }
   function renderMethod() {
-    var m = [['Sources', fmt(D.feeds.total), 'Public news, humanitarian and faith feeds. A feed enters only if it parses and published within 45 days. ' + D.feeds.ok + ' responded on the last refresh.'],
+    var m = [['Sources', fmt(D.feeds.total), 'Public news, humanitarian and faith feeds, in English and in local languages (' + (D.feeds.langs || ['en']).length + ' languages, ' + (D.feeds.local || 0) + ' local-language feeds). A feed enters only if it parses and published within 45 days. ' + D.feeds.ok + ' responded on the last refresh.'],
       ['Window', view === 'w7' ? '7 days' : '30 days', fmt(D.tracked) + ' tagged reports are held. Nothing older is substituted to pad a short list.'],
       ['Level', 'unique events', 'Reports about one incident count once; events weigh 1, 3, 9, 27 or 81 by severity; each country is read against its own history once three weeks exist.']];
     $('method').innerHTML = m.map(function (r) { return '<div class="cell"><span class="k">' + r[0] + '</span><h3>' + r[1] + '</h3><p>' + r[2] + '</p></div>'; }).join('');
@@ -290,7 +292,7 @@
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
       $('uhSub').textContent = urgent.length + ' serious events in the data we hold';
       $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><span></span></div>';
+        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + lang(e.l) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><span></span></div>';
       }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
@@ -298,7 +300,7 @@
         var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut; });
         $('arSub').textContent = rows.length + ' of ' + all.length + ' reports';
         $('reports').innerHTML = rows.length ? rows.map(function (r) {
-          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(safeUrl(r.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span></a><span></span></div>';
+          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(safeUrl(r.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span></a><span></span></div>';
         }).join('') : '<div class="empty">No reports match these filters.</div>';
       }
       ['fSev', 'fTh', 'fWin'].forEach(function (id) { $(id).addEventListener('change', draw); });
@@ -334,7 +336,7 @@
   function baselineDate() { var d = new Date(D.historySince + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 21); return d.toISOString().slice(0, 10); }
   function renderAbout() {
     $('aboutBody').innerHTML =
-      '<p>Upstream gives international ministry staff a quick read on the countries they serve: what is urgent, what is changing, and what to pray for. It reads public RSS and Atom feeds from ' + D.feeds.total + ' news, humanitarian and faith outlets and refreshes about every three hours.</p>' +
+      '<p>Upstream gives international ministry staff a quick read on the countries they serve: what is urgent, what is changing, and what to pray for. It reads public RSS and Atom feeds from ' + D.feeds.total + ' news, humanitarian and faith outlets, including local-language outlets in Spanish, French, Portuguese, Arabic, Russian, German, Indonesian, Turkish and Swahili, and refreshes about every three hours.</p>' +
       '<h3>How a country gets its level</h3><ol>' +
       '<li><b>Unique events, not articles.</b> Reports about the same incident are grouped into one event, so a country with 100 articles on one flood does not outrank a country with one new crisis.</li>' +
       '<li><b>Urgency-weighted.</b> An event counts 1, 3, 9, 27 or 81 by severity (1 to 5). One severity-5 event outweighs ten severity-2 events. A single-source event is capped at severity 4.</li>' +
@@ -344,6 +346,7 @@
       '<h3>Weekly and monthly</h3><p>Use the Weekly / Monthly switch at the top of the Brief. Monthly figures cover the last 30 days. Upstream began collecting ' + esc(D.historySince) + ', so 30-day change and the own-baseline comparison fill in over time.</p>' +
       '<h3>Your countries and the default five</h3><p>Until you pick your own list, the top shows the five most urgent countries at the moment you open it. Your list and prayer space are stored in this browser only.</p>' +
       '<h3>What it cannot do</h3><ul><li>Severity comes from keyword rules, not a person reading the story. Expect misses and false alarms.</li>' +
+      '<li>Local-language headlines are shown as written, tagged with their language, and are not machine-translated. They are grouped only with other headlines in the same language, so one incident covered in two languages can count as two events.</li>' +
       '<li>A quiet country may only be poorly covered by the feeds. Absence of news is not safety.</li>' +
       '<li>Domestic US news is left out on purpose; this tracks international contexts.</li>' +
       '<li>Country detection reads place names and nationalities in headlines. Headlines that name no place are skipped.</li>' +

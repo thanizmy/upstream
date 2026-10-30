@@ -100,3 +100,5 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 #themes .chip{min-height:36px;padding:6px 12px;font-size:14px}
 .filters select{font:inherit;font-size:15px;padding:11px 14px;background:var(--panel);border:1px dashed var(--rule);color:inherit;min-height:44px;border-radius:0}
 .empty.list{padding:22px var(--gut)}
+
+.tag.lang{background:var(--sink);color:var(--ink);border:1px dashed var(--ink2)}
