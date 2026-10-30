@@ -37,8 +37,6 @@
   function origLink(u, l) { return l && l !== 'en' && u ? '<a class="linkbtn orig" href="' + esc(u) + '" target="_blank" rel="noopener" title="Open the original page, in its own language">Original</a>' : '<span></span>'; }
   /** The original headline, shown under an English translation. */
   function ot(x) { return x.ht && x.h ? '<span class="ot">Original: ' + esc(x.h) + '</span>' : ''; }
-  /** Marks a headline element as translatable in the browser, when it is not English and has no stored translation. */
-  function la(x) { return x.l && x.l !== 'en' && !(x.ht || x.te) ? ' data-l="' + x.l + '"' : ''; }
   function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Headline written in ' + (LANGN[l] || l) + '. The link opens an English translation.">' + l.toUpperCase() + '</span>' : ''; }
   function tag(t, quiet) { return t ? '<span class="tag' + (quiet ? ' q' : '') + '">' + esc(t) + '</span>' : ''; }
   function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
@@ -91,7 +89,7 @@
   function evRow(e, c, withPray) {
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
-      '<a class="ev" href="' + esc(trUrl(u, e.l)) + '" target="_blank" rel="noopener"><span class="h"' + la(e) + '>' + esc(e.ht || e.h) + '</span>' +
+      '<a class="ev" href="' + esc(trUrl(u, e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span>' +
       '<span class="m">' + srcTags(e) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span>' + ot(e) + '</a>' +
       origLink(u, e.l) + '</div>';
   }
@@ -117,7 +115,7 @@
     var w = W(c), lead = w.top[0];
     return '<details class="crow" data-cc="' + c.cc + '" style="--k:' + kc(w.band) + '"><summary>' +
       '<div class="cr-name"><span class="fl">' + c.fl + '</span><a class="cl" href="#c/' + c.cc + '">' + esc(c.k) + '</a>' + bandChip(w.band) + '</div>' +
-      '<div class="cr-sum"><p class="cr-head">' + (lead ? srcTags(lead) + tag(TH[lead.th]) + '<span' + la(lead) + '>' + esc(lead.ht || lead.h) + '</span>' : 'No reports in this window') + '</p>' +
+      '<div class="cr-sum"><p class="cr-head">' + (lead ? srcTags(lead) + tag(TH[lead.th]) + '<span>' + esc(lead.ht || lead.h) + '</span>' : 'No reports in this window') + '</p>' +
       '<p class="cr-stats"><span class="lab">Summary</span><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p></div>' +
       '<div class="cr-gfx">' + spark(c, false, true) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
       '<div class="cr-body"><div class="prayer">' + esc(c.prayer.text) + '</div>' +
@@ -133,7 +131,7 @@
   }
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
-    return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(trUrl(url, u.l)) + '" target="_blank" rel="noopener"><span class="h"' + la(u) + '>' + esc(u.ht || u.h) + '</span>' +
+    return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(trUrl(url, u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.ht || u.h) + '</span>' +
       '<span class="m">' + srcTags(u) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span>' + ot(u) + '</a>' + origLink(url, u.l) + '</div>';
   }
 
@@ -199,7 +197,7 @@
       return '<a class="mv"><span><b>' + esc(TH[t.th] || t.th) + '</b> <span class="flat">· ' + t.cur + ' a day</span></span><span class="' + (up ? 'up' : 'down') + '">' + (t.pct == null ? 'new' : (t.pct > 0 ? '+' : '') + (Math.abs(t.pct) > 500 ? '500+' : t.pct) + '%') + '</span></a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No theme moved sharply.</p>';
     var sud = M.sudden.length ? M.sudden.slice(0, 4).map(function (e) {
-      return '<a class="mv sd" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat"' + la(e) + '>' + esc(e.ht || e.h) + '</span></span>' + pips(e.s) + '</a>';
+      return '<a class="mv sd" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat">' + esc(e.ht || e.h) + '</span></span>' + pips(e.s) + '</a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No new serious events in the last 48 hours.</p>';
     $('moved').innerHTML = '<div class="cells c4 moved"><div class="cell"><span class="k">Rising fastest</span>' + rows(M.up, 'up') + '</div>' +
       '<div class="cell"><span class="k">Quietening</span>' + rows(M.down, 'down') + '</div>' +
@@ -213,7 +211,7 @@
       var img = safeUrl(s.img);
       return '<a class="topc" href="' + esc(trUrl(safeUrl(s.u), s.l)) + '" target="_blank" rel="noopener">' +
         (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
-        '<div class="b"><span class="num">0' + (i + 1) + '</span><h4' + la(s) + '>' + esc(s.ht || s.h) + '</h4>' +
+        '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.ht || s.h) + '</h4>' +
         '<p class="k">' + srcTags(s) + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
     }).join('') || '<div class="empty">No story has two independent outlets in this window yet.</div>';
   }
@@ -351,7 +349,7 @@
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
       $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 5 shown, scroll for more' : '');
       $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h"' + la(e) + '>' + esc(e.ht || e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span>' + ot(e) + '</a>' + origLink(safeUrl(e.u), e.l) + '</div>';
+        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span>' + ot(e) + '</a>' + origLink(safeUrl(e.u), e.l) + '</div>';
       }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
       cap($('uh'), 5);
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
@@ -361,7 +359,7 @@
         var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut && (!q || ((r.te || '') + ' ' + r.t + ' ' + r.f + ' ' + (TH[r.th] || '')).toLowerCase().indexOf(q) >= 0); });
         $('arSub').textContent = rows.length + ' of ' + all.length + ' reports · first 5 shown, scroll for more';
         $('reports').innerHTML = rows.length ? rows.map(function (r) {
-          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h"' + la(r) + '>' + esc(r.te || r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span>' + ot({ ht: r.te, h: r.t }) + '</a>' + origLink(safeUrl(r.u), r.l) + '</div>';
+          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.te || r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span>' + ot({ ht: r.te, h: r.t }) + '</a>' + origLink(safeUrl(r.u), r.l) + '</div>';
         }).join('') : '<div class="empty">No reports match these filters.</div>';
         cap($('reports'), 5);
       }
@@ -410,7 +408,7 @@
       '<h3>Weekly and monthly</h3><p>Use the Weekly / Monthly switch at the top of the Brief. Monthly figures cover the last 30 days. Upstream began collecting ' + esc(D.historySince) + ', so 30-day change and the own-baseline comparison fill in over time.</p>' +
       '<h3>Your countries and the default five</h3><p>Until you pick your own list, the top shows the five most urgent countries at the moment you open it. Your list and prayer space are stored in this browser only.</p>' +
       '<h3>What it cannot do</h3><ul><li>Severity comes from keyword rules, not a person reading the story. Expect misses and false alarms.</li>' +
-      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, and its link opens an English machine translation (an Original link sits beside it). The button "Show local headlines in English" (shown in browsers that can translate on the device, such as recent desktop Chrome) swaps those headlines to English and keeps the original beneath; nothing is sent to a server; <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
+      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, and its link opens an English machine translation (an Original link sits beside it). <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
       '<li>A quiet country may only be poorly covered by the feeds. Absence of news is not safety.</li>' +
       '<li>The US is counted only when an event happens there: a state or city is named, or the text says in the United States. Being named as an actor, as in US strikes, does not place an event in the US.</li>' +
       '<li>Country detection reads place names and nationalities in headlines. Headlines that name no place are skipped.</li>' +
@@ -551,86 +549,6 @@
   }
   secBar();
 
-  /* ── English headlines in the reader's own browser ─────────────────────────────
-     Uses the browser's built-in on-device Translator (recent desktop Chrome). No key, no server, nothing leaves the device.
-     Where it is not available the button stays hidden and headlines keep their translated-page links. */
-  var TRK = 'upstream.tr.v1', trOn = false, trTr = {}, trNo = {}, trPend = {}, trCache = {}, trQ = [], trBusy = false, trIO = null, trProg = '';
-  function trSupported() { return typeof self.Translator !== 'undefined' && self.Translator && typeof self.Translator.create === 'function'; }
-  function trPage() { var o = {}; document.querySelectorAll('[data-l]').forEach(function (el) { o[el.dataset.l] = 1; }); return Object.keys(o); }
-  function trNames(list) { return list.map(function (l) { return LANGN[l] || l; }).join(', '); }
-  function trLabel() {
-    var b = $('trBtn'); if (!b) return;
-    var pend = Object.keys(trPend).filter(function (l) { return !trTr[l] && !trNo[l]; }), no = trPage().filter(function (l) { return trNo[l]; });
-    b.textContent = trProg ? trProg : !trOn ? 'Show local headlines in English' : pend.length ? 'English on · click to add ' + trNames(pend) : 'Showing in English · turn off';
-    b.setAttribute('aria-pressed', trOn ? 'true' : 'false');
-    $('trNote').textContent = trOn && no.length ? 'Not available in this browser: ' + trNames(no) : '';
-  }
-  /** Get a translator for one language. With a click (gesture) a language pack may be downloaded; without one only installed packs are used. */
-  function trGet(l, gesture) {
-    if (trTr[l]) return Promise.resolve(trTr[l]);
-    if (trNo[l]) return Promise.resolve(null);
-    var make = function () {
-      return self.Translator.create({ sourceLanguage: l, targetLanguage: 'en', monitor: function (m) { m.addEventListener('downloadprogress', function (e) { trProg = 'Downloading ' + (LANGN[l] || l) + ' ' + Math.round(e.loaded * 100) + '%'; trLabel(); }); } })
-        .then(function (t) { trTr[l] = t; delete trPend[l]; trProg = ''; return t; });
-    };
-    if (gesture) return make().catch(function () { trNo[l] = 1; trProg = ''; return null; });
-    return self.Translator.availability({ sourceLanguage: l, targetLanguage: 'en' }).then(function (s) {
-      if (s === 'available') return make();
-      if (s === 'unavailable') trNo[l] = 1; else trPend[l] = 1;
-      return null;
-    }).catch(function () { trNo[l] = 1; return null; });
-  }
-  function trApply(el, en, src) {
-    if (!trOn || !en || !el.isConnected || el.dataset.tx) return;
-    el.dataset.orig = src; el.dataset.tx = '1'; el.textContent = en; el.title = 'Original: ' + src;
-    var ev = el.closest('.ev');
-    if (ev && !ev.querySelector('.ot')) { var o = document.createElement('span'); o.className = 'ot'; o.dataset.js = '1'; o.textContent = 'Original: ' + src; ev.appendChild(o); }
-  }
-  function trOne(el) {
-    var l = el.dataset.l, src = el.textContent, key = l + '|' + src, t = trTr[l];
-    if (el.dataset.tx || !t) return Promise.resolve();
-    if (trCache[key]) { trApply(el, trCache[key], src); return Promise.resolve(); }
-    return t.translate(src).then(function (en) { trCache[key] = en; trApply(el, en, src); }).catch(function () {});
-  }
-  function trPump() {
-    if (trBusy) return; trBusy = true;
-    (function next() { var el = trQ.shift(); if (!el) { trBusy = false; trLabel(); return; } trOne(el).then(next, next); })();
-  }
-  function trScan() {
-    if (!trOn || !trIO) return;
-    document.querySelectorAll('[data-l]:not([data-tx])').forEach(function (el) { if (!el.dataset.seen && trTr[el.dataset.l]) { el.dataset.seen = '1'; trIO.observe(el); } });
-  }
-  function trEnable(gesture) {
-    trOn = true; save(TRK, 1);
-    if (!trIO) trIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { trIO.unobserve(e.target); trQ.push(e.target); } }); trPump(); }, { rootMargin: '400px' });
-    var langs = trPage(), jobs = langs.map(function (l) { return trGet(l, gesture); }); // all started inside the click, so a download is allowed
-    trLabel();
-    Promise.all(jobs).then(function () { document.querySelectorAll('[data-seen]').forEach(function (el) { if (!el.dataset.tx) delete el.dataset.seen; }); trScan(); trLabel(); });
-  }
-  function trDisable() {
-    trOn = false; save(TRK, 0); trQ = [];
-    document.querySelectorAll('[data-tx]').forEach(function (el) {
-      el.textContent = el.dataset.orig; el.removeAttribute('title'); delete el.dataset.tx; delete el.dataset.orig; delete el.dataset.seen;
-      var ev = el.closest('.ev'); if (ev) { var o = ev.querySelector('.ot[data-js]'); if (o) o.remove(); }
-    });
-    trLabel();
-  }
-  function trInit() {
-    var b = $('trBtn'); if (!b || !trSupported()) return;
-    b.hidden = false;
-    b.addEventListener('click', function () {
-      var pend = Object.keys(trPend).filter(function (l) { return !trTr[l] && !trNo[l]; });
-      if (!trOn || pend.length) trEnable(true); else trDisable();
-    });
-    var t = null;
-    new MutationObserver(function () {
-      if (!trOn) return; clearTimeout(t);
-      t = setTimeout(function () { trPage().forEach(function (l) { if (!trTr[l] && !trNo[l] && !trPend[l]) trGet(l, false).then(function () { trScan(); trLabel(); }); }); trScan(); trLabel(); }, 250);
-    }).observe(document.body, { childList: true, subtree: true });
-    if (load(TRK, 0) === 1) trEnable(false); // picked up again on later visits, without a download
-    trLabel();
-  }
-
   function refreshAll() {
     renderBrief(); renderPrayer();
     if (!$('tab-country').hidden) { var m = location.hash.match(/^#c\/([A-Za-z]{2})$/); if (m) renderProfile(m[1].toUpperCase()); }
@@ -645,7 +563,7 @@
     if (age > 12) { msg = 'This data is ' + Math.round(age) + ' hours old; the latest refresh may have failed.'; bn.className = 'banner warn'; }
     else if (!D.baselineReady) { msg = 'Demo note: Upstream is still collecting history. Levels use the severity score only until about ' + baselineDate() + ', after which a jump above a country own normal can lift its level one step.'; }
     if (msg) { bn.textContent = msg; bn.hidden = false; }
-    renderBrief(); renderAbout(); route(); trInit();
+    renderBrief(); renderAbout(); route();
     fetch('world.json').then(function (r) { return r.json(); }).then(function (j) { world = j; renderMap(); }).catch(function () { $('map').innerHTML = '<div class="empty">The map could not be loaded.</div>'; });
   }
   fetch('data/brief.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(boot).catch(function () {
