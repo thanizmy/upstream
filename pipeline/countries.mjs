@@ -83,8 +83,12 @@ const RE = new RegExp('(?<![\\p{L}\\p{N}])(' + bKeys.map(esc).join('|') + ')(?![
 const RE_NB = nbKeys.length ? new RegExp('(' + nbKeys.map(esc).join('|') + ')', 'gu') : null;
 
 /** Distinct country codes mentioned in `text`, in order of first appearance. */
+// Names that are also ordinary words or first names are only counted with a clue that a place is meant ("in Chad", "Chad's army"), not on their own.
+const CONTEXT = { Chad: 'TD', Guinea: 'GN', Dominica: 'DM' };
+const CONTEXT_RE = /(?:\b(?:in|from|to|across|near|into|of|for|with|and|between|by|over|against)\s+|^)(Chad|Guinea|Dominica)(?=['\u2019]s\b|[\s,.:;!?)]|$)(?!\s+[A-Z][a-z])/g;
 export function detectCountries(text) {
   const out = [];
+  for (const m of text.matchAll(CONTEXT_RE)) { const cc = CONTEXT[m[1]]; if (COUNTRIES[cc] && !out.includes(cc)) out.push(cc); }
   if (RE_NB) for (const m of text.matchAll(RE_NB)) { const cc = aliasToCc.get(m[1]); if (cc && !out.includes(cc)) out.push(cc); }
   for (const m of text.matchAll(RE)) {
     const cc = aliasToCc.get(m[1]);
