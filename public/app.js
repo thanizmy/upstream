@@ -279,7 +279,7 @@
       '<p class="lede" id="pSummary"></p>' +
       '<div class="prayer big">' + esc(c.prayer.text) + '</div>' +
       '<div class="sechead"><h2>Activity, <i>day by day</i></h2><span class="sub">' + chgLong(w) + '</span></div>' +
-      '<div class="panelbox">' + spark(c, true) + '</div>' +
+      '<div class="panelbox" data-cc="' + cc + '">' + spark(c, true, true) + '<p class="cr-count sub">Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button></p><div class="list cr-list" hidden></div></div>' +
       '<div class="sevbar" id="sevbar"></div><div id="themes" class="chips"></div>' +
       '<div class="sechead"><h2>Urgent <i>history</i></h2><span class="sub" id="uhSub">Loading…</span></div><div class="list" id="uh"></div>' +
       '<div class="sechead"><h2>All <i>reports</i></h2><span class="sub" id="arSub"></span></div>' +
@@ -444,13 +444,13 @@
       .catch(function () { cnt.textContent = 'Headlines are unavailable right now.'; });
   }
   function crowPick(e) {
-    var r = e.target.closest && e.target.closest('.crow .spark rect[data-day]'); if (!r) return false;
-    e.preventDefault(); var d = r.closest('.crow'); d.open = true; crowShow(d, { day: r.dataset.day }); return true;
+    var r = e.target.closest && e.target.closest('.crow .spark rect[data-day], .panelbox .spark rect[data-day]'); if (!r) return false;
+    e.preventDefault(); var d = r.closest('.crow, .panelbox'); if (d.classList.contains('crow')) d.open = true; crowShow(d, { day: r.dataset.day }); return true;
   }
   document.addEventListener('click', function (e) {
     if (crowPick(e)) return;
     var b = e.target.closest && e.target.closest('button[data-showall],button[data-clear]'); if (!b) return;
-    var d = b.closest('.crow'); if (!d) return;
+    var d = b.closest('.crow, .panelbox'); if (!d) return;
     if (b.dataset.clear) { d.querySelector('.cr-list').hidden = true; d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.remove('sel'); }); d.querySelector('.cr-count').innerHTML = 'Select a bar to see that day\'s headlines · <button type="button" class="linkbtn" data-showall="' + d.dataset.cc + '">Show all in this window</button>'; }
     else crowShow(d, {});
   });

@@ -167,3 +167,10 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .crow .spark rect:focus-visible{outline:none;stroke:var(--navy);stroke-width:2}
 .cr-pick{margin:14px 0 4px;max-width:720px}
 .cr-pick .spark{height:84px}
+.panelbox .spark rect[data-day]{cursor:pointer}
+.panelbox .spark rect[data-day]:hover{opacity:1;stroke:var(--navy);stroke-width:1.2}
+.panelbox .spark rect.sel{opacity:1;stroke:var(--navy);stroke-width:2}
+.panelbox .spark rect:focus-visible{outline:none;stroke:var(--navy);stroke-width:2}
+.panelbox .cr-count{margin:12px 0 6px}
+.panelbox .cr-list{max-height:420px;overflow:auto;border-top:1px solid var(--hair)}
+.panelbox .cr-list .urow{padding:12px 0}
