@@ -93,6 +93,23 @@
       (o.remove ? '<button class="btn ghost" data-' + o.remove + '="' + c.cc + '" type="button">Remove</button>' : '') +
       '</div></article>';
   }
+  function trend(c) {
+    var S = c.series, n = view === 'w7' ? 14 : 30, N = S.n.slice(-n), SV = S.s.slice(-n), mx = Math.max.apply(null, N) || 1, bw = 4, g = 1, H = 22, b = '';
+    N.forEach(function (v, i) { var h = v ? Math.max(2, v / mx * H) : 0; b += '<rect x="' + i * (bw + g) + '" y="' + (H - h) + '" width="' + bw + '" height="' + h + '" style="fill:' + kc(SV[i]) + '"/>'; });
+    return '<svg class="trend" width="' + (n * (bw + g)) + '" height="' + H + '" viewBox="0 0 ' + (n * (bw + g)) + ' ' + H + '" role="img" aria-label="Events per day, last ' + n + ' days">' + b + '</svg>';
+  }
+  function countryRow(c) {
+    var w = W(c), lead = w.top[0];
+    return '<details class="crow" data-cc="' + c.cc + '" style="--k:' + kc(w.band) + '"><summary>' +
+      '<div class="cr-name"><span class="fl">' + c.fl + '</span><a class="cl" href="#c/' + c.cc + '">' + esc(c.k) + '</a>' + bandChip(w.band) + '</div>' +
+      '<div class="cr-sum"><p class="cr-head">' + (lead ? lang(lead.l) + tag(TH[lead.th]) + '<span>' + esc(lead.h) + '</span>' : 'No reports in this window') + '</p>' +
+      '<p class="cr-stats"><span class="lab">Summary</span><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p></div>' +
+      '<div class="cr-gfx">' + spark(c) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
+      '<div class="cr-body"><div class="prayer">' + esc(c.prayer.text) + '</div>' +
+      '<p class="cr-count sub">' + w.top.length + ' headlines shown · <span data-all>loading all…</span></p>' +
+      '<div class="list cr-list">' + w.top.map(function (e) { return evRow(e, c, false); }).join('') + '</div>' +
+      '<div class="acts"><a class="btn ghost" href="#c/' + c.cc + '">Full report</a><button class="btn ghost" data-addp="' + c.cc + '" type="button">Add to prayer space</button></div></div></details>';
+  }
   function findEvent(id, cc) {
     var c = byCc[cc]; if (c) { var e = c.w7.top.concat(c.w30.top).filter(function (x) { return x.id === id; })[0]; if (e) return e; }
     var u = D.urgent.w7.concat(D.urgent.w30).filter(function (x) { return x.id === id; })[0]; if (u) return u;
@@ -123,7 +140,7 @@
       var c = byCc[cc]; return '<span class="chip">' + c.fl + ' ' + esc(c.k) + '<button type="button" data-unwatch="' + cc + '" aria-label="Remove ' + esc(c.k) + '">&times;</button></span>';
     }).join('') + '<input type="search" id="wAdd" list="countryList" placeholder="Add a country…" aria-label="Add a country to your list" autocomplete="off">' +
       (w.custom ? '<button class="linkbtn" type="button" id="wReset">Reset to top 5 most urgent</button>' : '');
-    $('watch').innerHTML = w.list.map(function (cc) { return countryCard(byCc[cc], { events: 2 }); }).join('');
+    $('watch').innerHTML = w.list.map(function (cc) { return countryRow(byCc[cc]); }).join('');
   }
   function renderUrgent() {
     var w = watchList(), set = {}; w.list.forEach(function (c) { set[c] = 1; });
@@ -198,12 +215,12 @@
     svg.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; } });
     var placed = D.countries.filter(function (c) { return W(c).ev; }).length;
     $('mapStat').textContent = placed + ' countries with reports · ' + winLabel();
-    $('maplegend').innerHTML = [1, 2, 3, 4, 5].map(function (b) { return '<b><i style="--k:' + kc(b) + '"></i>' + BAND[b] + '</b>'; }).join('') + '<b><i style="--k:var(--sink);outline:1px solid var(--rule)"></i>Not tracked (incl. US)</b><b style="margin-left:auto">dots mark small countries · size = events</b>';
+    $('legendKey').innerHTML = '<span class="k">Level</span>' + [5, 4, 3, 2, 1].map(function (b) { return '<b><i style="--k:' + kc(b) + '"></i>' + BAND[b] + '</b>'; }).join('') + '<b><i style="--k:var(--sink);outline:1px solid var(--rule)"></i>Not tracked (incl. US)</b><small>Dots mark small countries; size shows events.</small>';
     // regional data table
     var R = {}; D.countries.forEach(function (c) { var w = W(c); if (!w.ev) return; var r = R[c.region] = R[c.region] || { n: 0, hot: 0, ev: 0, rep: 0 }; r.n++; r.ev += w.ev; r.rep += w.rep; if (w.band >= 4) r.hot++; });
-    $('regions').innerHTML = '<thead><tr><th>Region</th><th class="n">Countries</th><th class="n">High or Critical</th><th class="n">Events</th><th class="n">Reports</th></tr></thead><tbody>' +
-      Object.keys(R).sort(function (a, b) { return R[b].hot - R[a].hot || R[b].ev - R[a].ev; }).map(function (k) {
-        var r = R[k]; return '<tr><td><span class="cn">' + esc(k) + '</span></td><td class="n">' + r.n + '</td><td class="n"><b>' + r.hot + '</b></td><td class="n">' + r.ev + '</td><td class="n">' + r.rep + '</td></tr>';
+    $('regions').innerHTML = '<thead><tr><th>Region</th><th class="n">Countries</th><th class="n">High+</th><th class="n">Events</th></tr></thead><tbody>' +
+      Object.keys(R).sort(function (x, y) { return R[y].hot - R[x].hot || R[y].ev - R[x].ev; }).map(function (k) {
+        var r = R[k]; return '<tr><td>' + esc(k) + '</td><td class="n">' + r.n + '</td><td class="n"><b>' + r.hot + '</b></td><td class="n">' + r.ev + '</td></tr>';
       }).join('') + '</tbody>';
   }
   function renderNeed() {
@@ -218,11 +235,11 @@
     if (s === 'gap') rows.sort(function (a, b) { var ga = W(a).band >= 3 ? 0 : 1, gb = W(b).band >= 3 ? 0 : 1; return ga - gb || W(a).src - W(b).src || W(b).band - W(a).band; });
     else rows.sort(by[s]);
     $('needStat').textContent = rows.length + ' countries · first 10 shown, scroll for more';
-    $('need').innerHTML = '<thead><tr><th>Country</th><th>Level</th><th class="n">Events</th><th class="n">Reports</th><th class="n">Our sources</th><th>Change</th></tr></thead><tbody>' +
+    $('need').innerHTML = '<thead><tr><th>Country</th><th>Level</th><th class="n">Events</th><th class="n">Reports</th><th class="n">Our sources</th><th>Change</th><th>Trend</th></tr></thead><tbody>' +
       rows.map(function (c) {
         var w = W(c);
         return '<tr class="go" data-go="' + c.cc + '" tabindex="0"><td><span class="cn"><span class="fl">' + c.fl + '</span>' + esc(c.k) + (w.thin ? '<span class="thin">thin</span>' : '') + '</span></td>' +
-          '<td>' + pips(w.band) + ' <span class="lv">' + BAND[w.band] + '</span></td><td class="n">' + w.ev + '</td><td class="n">' + w.rep + '</td><td class="n">' + w.src + '</td><td>' + chgHtml(w) + '</td></tr>';
+          '<td>' + pips(w.band) + ' <span class="lv">' + BAND[w.band] + '</span></td><td class="n">' + w.ev + '</td><td class="n">' + w.rep + '</td><td class="n">' + w.src + '</td><td>' + chgHtml(w) + '</td><td>' + trend(c) + '</td></tr>';
       }).join('') + '</tbody>';
   }
   function renderGaps() {
@@ -408,6 +425,16 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
+  document.addEventListener('toggle', function (ev) {
+    var d = ev.target; if (!d.classList || !d.classList.contains('crow') || !d.open || d.dataset.loaded) return;
+    d.dataset.loaded = '1';
+    var cc = d.dataset.cc, c = byCc[cc], days = view === 'w7' ? 7 : 30, cut = Date.now() - days * 864e5;
+    fetch('data/c/' + cc + '.json').then(function (r) { return r.json(); }).then(function (P) {
+      var evs = P.events.filter(function (e) { return new Date(e.last + 'T23:59:59Z').getTime() > cut; }).sort(function (x, y) { return y.s - x.s || (x.last < y.last ? 1 : -1); });
+      d.querySelector('.cr-list').innerHTML = evs.length ? evs.map(function (e) { return evRow(e, c, false); }).join('') : '<div class="empty">No headlines in this window.</div>';
+      d.querySelector('.cr-count').innerHTML = evs.length + ' headlines, ' + (view === 'w7' ? 'last 7 days' : 'last 30 days') + ' · most serious first';
+    }).catch(function () { var s = d.querySelector('[data-all]'); if (s) s.textContent = 'full list unavailable'; });
+  }, true);
   /* section bar: scroll to a section, and highlight the one in view */
   function secBar() {
     var bar = $('secnav'); if (!bar) return;

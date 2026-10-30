@@ -30,7 +30,7 @@
 
   <!-- BRIEF -->
   <section id="tab-brief" class="tab">
-    <nav class="secnav" id="secnav" aria-label="Brief sections"><div class="secin"><button type="button" data-sec="sec-watch">Your countries</button><button type="button" data-sec="sec-urgent">Urgent</button><button type="button" data-sec="sec-moved">What moved</button><button type="button" data-sec="sec-stories">Top stories</button><button type="button" data-sec="sec-map">World map</button><button type="button" data-sec="sec-need">Where need is greatest</button><button type="button" data-sec="sec-gaps">Blind spots</button><button type="button" data-sec="sec-method">How it is built</button></div></nav>
+    <nav class="secnav" id="secnav" aria-label="Brief sections"><div class="secin"><button type="button" data-sec="sec-watch">Your countries</button><button type="button" data-sec="sec-map">World map</button><button type="button" data-sec="sec-urgent">Urgent</button><button type="button" data-sec="sec-moved">What moved</button><button type="button" data-sec="sec-stories">Top stories</button><button type="button" data-sec="sec-need">Where need is greatest</button><button type="button" data-sec="sec-gaps">Blind spots</button><button type="button" data-sec="sec-method">How it is built</button></div></nav>
     <div class="hero">
       <p class="eyebrow" id="dateline">Loading…</p>
       <h1 id="heroLine">Reading the world for you…</h1>
@@ -46,7 +46,13 @@
 
     <div class="sechead" id="sec-watch"><h2>Your <i>countries</i></h2><span class="sub" id="watchMode"></span></div>
     <div class="chips" id="chips"></div>
-    <div class="cards" id="watch"></div>
+    <div class="crows" id="watch"></div>
+
+    <div class="sechead" id="sec-map"><h2>The world at a <i>glance</i></h2><span class="sub" id="mapStat"></span></div>
+    <div class="mapwrap mapgrid">
+      <div class="mapscroll"><div id="map" class="mapbox"></div></div>
+      <aside class="maplegend" id="maplegend" aria-label="Legend and regions"><div id="legendKey" class="lkey"></div><table id="regions"></table></aside>
+    </div>
 
     <div class="sechead" id="sec-urgent"><h2>What is <i>urgent</i> right now</h2><span class="sub" id="urgentCount"></span></div>
     <div class="list" id="urgentMine"></div>
@@ -60,13 +66,6 @@
 
     <div class="sechead" id="sec-stories"><h2>The five stories to <i>know</i></h2><span class="sub" id="storiesNote"></span></div>
     <div class="stories" id="stories"></div>
-
-    <div class="sechead" id="sec-map"><h2>The world at a <i>glance</i></h2><span class="sub" id="mapStat"></span></div>
-    <div class="mapwrap">
-      <div class="mapscroll"><div id="map" class="mapbox"></div></div>
-      <div class="maplegend" id="maplegend"></div>
-    </div>
-    <div class="scroll" style="margin-top:18px"><table id="regions"></table></div>
 
     <div class="sechead" id="sec-need"><h2>Where is the need <i>greatest</i>?</h2><span class="sub" id="needStat"></span></div>
     <p class="note" style="margin-top:0">Every country with recent reporting. Few sources next to a high level means a gap in monitoring, not a calm country. Select a country for its full report.</p>
