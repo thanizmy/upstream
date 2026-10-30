@@ -76,7 +76,7 @@
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
       '<a class="ev" href="' + esc(u) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
       '<span class="m">' + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
-      (withPray ? '<button class="linkbtn" data-pin="' + esc(e.id) + '" data-cc="' + esc(c.cc) + '" type="button">+ Pray</button>' : '<span></span>') + '</div>';
+      '<span></span></div>';
   }
   function countryCard(c, o) {
     o = o || {};
@@ -99,8 +99,7 @@
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
     return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
-      '<span class="m">' + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a>' +
-      '<button class="linkbtn" data-pin="' + esc(u.id) + '" data-cc="' + esc(c.cc) + '" type="button">+ Pray</button></div>';
+      '<span class="m">' + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a><span></span></div>';
   }
 
   /* ── brief ─────────────────────────────────────────── */
