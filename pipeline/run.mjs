@@ -15,11 +15,14 @@ const KEEP_DAYS = 70;
 // Scoring model v2. Severity is impact-based and the same for every country; only events of severity 3 to 5 carry the urgency score.
 //   S = 8*(1+ln n3) + 30*(1+ln n4) + 100*(1+ln n5)   (a tier with no events adds nothing)
 // Weekly level from fixed thresholds on S (10 / 30 / 100); the monthly level uses four times those thresholds on the sum of four weekly scores.
-const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 2;
+const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 3;
 const T3_CAP = 25; // severity-3 events alone can reach Elevated but never High: many minor incidents are not instability
 const THRESH = [10, 30, 100];
 const bandOf = (S, k = 1) => S <= 0 ? 1 : S < THRESH[0] * k ? 2 : S < THRESH[1] * k ? 3 : S < THRESH[2] * k ? 4 : 5;
 const AUTH_HOSTS = /(^|\.)(un\.org|who\.int|gdacs\.org|usgs\.gov|reliefweb\.int|icrc\.org)$/;
+// World / international sections and multi-country services say nothing about the outlet's own country, so a headline with no country in it is skipped, not filed under the home country.
+const WORLD_RE = /(the-gioi|thegioi|th\u1ebf gi\u1edbi|world|mundo|internacional|international|monde|\bwelt\b|ausland|esteri|mondo|bbci\.co\.uk|dw\.com|rfi\.fr|france24|euronews|dunya|\u56fd\u9645|\u570b\u969b|\u56fd\u969b|\ubbfc\uc81c|\u0432\u0441\u0435 \u043d\u043e\u0432\u043e\u0441\u0442\u0438)/i;
+const isWorld = f => WORLD_RE.test(f.name + ' ' + f.url);
 const FEED_HINT = { 'Premium Times': 'NG', 'Punch Nigeria': 'NG', 'Daily Nation': 'KE', Dawn: 'PK', 'Japan Times': 'JP', 'Taipei Times': 'TW',
   'Times of Israel': 'IL', 'Jerusalem Post': 'IL', 'Kyiv Independent': 'UA', Rappler: 'PH', Irrawaddy: 'MM', 'Mexico News Daily': 'MX',
   'Havana Times': 'CU', 'Colombia One': 'CO', 'Peru Reports': 'PE', 'PNG Post-Courier': 'PG', 'Ethiopia Insight': 'ET',
@@ -99,7 +102,7 @@ await Promise.all(Array.from({ length: 12 }, async () => {
         if (byId.has(id)) continue;
         let cc = detectCountries(it.title).slice(0, 3);
         if (!cc.length) cc = detectCountries(it.summary.slice(0, 300)).slice(0, 2);
-        if (!cc.length && (f.cc || FEED_HINT[f.name])) cc = [f.cc || FEED_HINT[f.name]];
+        if (!cc.length && !isWorld(f) && (f.cc || FEED_HINT[f.name])) cc = [f.cc || FEED_HINT[f.name]];
         if (!cc.length) continue;
         const lang = f.lang || 'en';
         const { s, th } = lang === 'en' ? classify(it.title, it.summary) : classifyLocal(it.title, it.summary, lang);
@@ -116,8 +119,8 @@ console.log(`feeds ok ${feedsOk}/${feeds.length}, new tagged items ${fresh}, bad
 if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keeping previous output'); process.exit(1); }
 
 // local-language headlines are re-placed each run, so improvements to country names also fix items stored earlier
-const homeByFeed = Object.fromEntries(feeds.map(f => [f.name, f.cc || FEED_HINT[f.name]]));
-for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).slice(0, 3); const alt = cc.length ? cc : homeByFeed[it.f] ? [homeByFeed[it.f]] : it.cc; it.cc = alt; }
+const homeByFeed = Object.fromEntries(feeds.filter(f => !isWorld(f)).map(f => [f.name, f.cc || FEED_HINT[f.name]]));
+for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).slice(0, 3); it.cc = cc.length ? cc : homeByFeed[it.f] ? [homeByFeed[it.f]] : []; }
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
 // ── 3. cluster into unique events (per country) ──────────────────────────────
 const STOP = new Set('los las del que con por para una uno sus más como este esta tras sobre entre desde les des une pour dans par sur avec aux est sont plus cette après contre dos das uma mais após der die das und mit von für auf den dem ein eine nach über bei zum zur ist sind the and for with from that this have has will after over into about than their they were been are was its not but who how what when where why says said say new more news amid as of in on at to by is it be an a or up out off could would may after before during against'.split(' '));

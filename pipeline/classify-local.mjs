@@ -131,20 +131,38 @@ const T = {
 };
 
 T.vi = {
-  kill: 'ch[ếe]t|t[ửu] vong|thi[ệe]t m[ạa]ng|gi[ếe]t|s[áa]t h[ạa]i|[sđ]ã thiệt mạng|nạn nhân|hành quyết|chặt đầu',
-  violence: 't[ấa]n c[ôo]ng|đánh bom|v[ụu] n[ổo]|n[ổo] l[ớo]n|b[ắa]n|b[ắa]t c[óo]c|con tin|chi[ếe]n tranh|t[êe]n l[ửu]a|giao tranh|kh[ủu]ng b[ốo]|phục kích|đâm|phiến quân|dân quân|không kích|oanh tạc|xâm lược',
-  disaster: 'đ[ộo]ng đ[ấa]t|l[ũu] l[ụu]t|b[ãa]o|sóng thần|h[ỏo]a ho[ạa]n|ch[áa]y|s[ạa]t l[ởo]|núi l[ửu]a|h[ạa]n h[áa]n|tai n[ạa]n|va ch[ạa]m|ch[ìi]m|đổ s[ậa]p|lốc xoáy|mưa lớn',
-  health: 'd[ịi]ch b[ệe]nh|d[ịi]ch t[ảa]|ebola|s[ởo]i|s[ốo]t rét|s[ốo]t xu[ấa]t huy[ếe]t|đ[ạa]i d[ịi]ch|cúm gia c[ầa]m|bùng phát d[ịi]ch|đ[ậa]u mùa|viêm màng não',
-  hunger: 'n[ạa]n đói|đói kém|suy dinh dưỡng|khủng hoảng lương thực|mất an ninh lương thực',
-  displace: 't[ịi] n[ạa]n|ng[ườu]i t[ịi] n[ạa]n|di t[ảa]n|di c[ưu]|s[ơo] t[áa]n|xin t[ịi] n[ạa]n|không quốc tịch|sơ tán',
-  unrest: 'bi[ểe]u t[ìi]nh|b[ạa]o lo[ạa]n|gi[ớo]i nghiêm|t[ìi]nh tr[ạa]ng kh[ẩa]n c[ấa]p|thi[ếe]t quân lu[ậa]t|đình công|đ[ảa]o chính|đàn áp|nổi dậy|hơi cay|đảo chính',
-  mass: 'th[ảa]m s[áa]t|di[ệe]t ch[ủu]ng|m[ồo] chôn t[ậa]p th[ểe]|t[ộo]i ác ch[ốo]ng nhân loại|thanh lọc sắc tộc|đảo chính',
-  persecute: 'kitô|ki-tô|nhà th[ờo]|m[ụu]c s[ưu]|giám m[ụu]c|linh m[ụu]c|nữ tu|truyền giáo|tin lành|t[ựu] do tôn giáo|đàn áp tôn giáo|bách hại|phỉ báng',
-  harm: 'b[ắa]t gi[ữu]|b[ắa]t|t[ùu]|k[ếe]t án|tr[ụu]c xu[ấa]t|đe d[ọo]a|tra t[ấa]n|đ[ốo]t|c[ấa]m|t[ấa]n c[ôo]ng',
-  politics: 'b[ầa]u c[ửu]|qu[ốo]c h[ộo]i|b[ộo] tr[ưu][ởo]ng|t[ổo]ng th[ốo]ng|chính ph[ủu]|tr[ừu]ng ph[ạa]t|h[ộo]i ngh[ịi] th[ưu][ợo]ng đ[ỉi]nh|hi[ệe]p ư[ớo]c|ng[ừu]ng b[ắa]n|đàm phán|ngo[ạa]i giao|tr[ưu]ng c[ầa]u|thủ tướng',
-  sport: 'bóng đá|gi[ảa]i vô đ[ịi]ch|world cup|tennis|hòa nh[ạa]c|phim|ngôi sao|thời trang|công th[ứu]c|tử vi|ca sĩ'
+  kill: 'chết|tử vong|thiệt mạng|giết|sát hại|đã thiệt mạng|nạn nhân|hành quyết|chặt đầu',
+  violence: 'tấn công|đánh bom|vụ nổ|nổ lớn|bắn|bắt cóc|con tin|chiến tranh|tên lửa|giao tranh|khủng bố|phục kích|đâm|phiến quân|dân quân|không kích|oanh tạc|xâm lược',
+  disaster: 'động đất|lũ lụt|bão|sóng thần|hỏa hoạn|cháy|sạt lở|núi lửa|hạn hán|tai nạn|va chạm|chìm|đổ sập|lốc xoáy|mưa lớn',
+  health: 'dịch bệnh|dịch tả|ebola|sởi|sốt rét|sốt xuất huyết|đại dịch|cúm gia cầm|bùng phát dịch|đậu mùa|viêm màng não',
+  hunger: 'nạn đói|đói kém|suy dinh dưỡng|khủng hoảng lương thực|mất an ninh lương thực',
+  displace: 'tị nạn|ng[ườu]i tị nạn|di tản|di cư|sơ tán|xin tị nạn|không quốc tịch|sơ tán',
+  unrest: 'biểu tình|bạo loạn|giới nghiêm|tình trạng khẩn cấp|thiết quân luật|đình công|đảo chính|đàn áp|nổi dậy|hơi cay|đảo chính',
+  mass: 'thảm sát|diệt chủng|mồ chôn tập thể|tội ác chống nhân loại|thanh lọc sắc tộc|đảo chính',
+  persecute: 'kitô|ki-tô|nhà thờ|mục sư|giám mục|linh mục|nữ tu|truyền giáo|tin lành|tự do tôn giáo|đàn áp tôn giáo|bách hại|phỉ báng',
+  harm: 'bắt giữ|bắt|tù|kết án|trục xuất|đe dọa|tra tấn|đốt|cấm|tấn công',
+  politics: 'bầu cử|quốc hội|bộ trưởng|tổng thống|chính phủ|trừng phạt|hội nghị thượng đỉnh|hiệp ước|ngừng bắn|đàm phán|ngoại giao|trưng cầu|thủ tướng',
+  sport: 'bóng đá|giải vô địch|world cup|tennis|hòa nhạc|phim|ngôi sao|thời trang|công thức|tử vi|ca sĩ'
 };
 Object.assign(T, EXTRA);
+// harm signals (dmg) and heritage / culture / drill words (soft) for the larger languages
+const GUARD = {
+  vi: { dmg: 'bị thương|thiệt hại|sơ tán|mất tích|phá hủy|tàn phá|đổ nát|cứu hộ|khẩn cấp|vô gia cư|mắc kẹt|nhấn chìm|thương vong|nạn nhân', soft: 'di sản|di tích|bảo tàng|kỷ niệm|lễ hội|bộ phim|phim tài liệu|tưởng niệm|lịch sử|cổ đại|du lịch|công nhận|triển lãm|trò chơi' },
+  es: { dmg: 'herid|daños|evacua|desaparecid|destru|rescate|emergencia|damnificad|atrapad|víctimas|hospital', soft: 'patrimonio|museo|aniversario|exposición|festival|película|documental|homenaje|histórico|antiguo|turismo|monumento|simulacro|videojuego' },
+  fr: { dmg: 'blessé|dégâts|évacu|disparu|détruit|sauvetage|urgence|sinistré|piégé|victimes|hôpital', soft: 'patrimoine|musée|anniversaire|exposition|festival|film|documentaire|commémor|historique|antique|tourisme|monument|exercice|jeu vidéo' },
+  pt: { dmg: 'ferid|danos|evacua|desaparecid|destru|resgate|emergência|desabrigad|presos|vítimas|hospital', soft: 'patrimônio|património|museu|aniversário|exposição|festival|filme|documentário|homenagem|histórico|antigo|turismo|monumento|simulado|videogame' },
+  de: { dmg: 'verletzt|schäden|evakuier|vermisst|zerstör|rettung|notstand|obdachlos|eingeschlossen|opfer|krankenhaus', soft: 'erbe|museum|jahrestag|ausstellung|festival|film|dokumentation|gedenk|historisch|antik|tourismus|denkmal|übung|videospiel' },
+  ru: { dmg: 'ранен|ущерб|эвакуир|пропал|разруш|спасател|чрезвычайн|без крыши|заблокир|пострадав|больниц', soft: 'наследи|музей|годовщин|выставк|фестивал|фильм|документальн|памят|историческ|древн|туризм|памятник|учени|видеоигр' },
+  ar: { dmg: 'جرح|إصابة|أضرار|إجلاء|مفقود|دمار|إنقاذ|طوارئ|مشرد|محاصر|ضحايا|مستشفى', soft: 'تراث|متحف|ذكرى|معرض|مهرجان|فيلم|وثائقي|إحياء|تاريخي|أثري|سياحة|نصب|تمرين|لعبة' },
+  id: { dmg: 'luka|kerusakan|evakuasi|hilang|hancur|penyelamatan|darurat|terjebak|korban|rumah sakit', soft: 'warisan|museum|peringatan|pameran|festival|film|dokumenter|bersejarah|kuno|wisata|monumen|simulasi|permainan' },
+  tr: { dmg: 'yaralı|hasar|tahliye|kayıp|yıkıl|kurtarma|acil|mahsur|mağdur|hastane', soft: 'miras|müze|yıldönümü|sergi|festival|film|belgesel|anma|tarihi|antik|turizm|anıt|tatbikat|oyun' },
+  zh: { dmg: '受伤|受傷|损失|損失|疏散|失踪|失蹤|摧毁|摧毀|救援|紧急|緊急|无家可归|被困|伤亡|傷亡|医院|醫院', soft: '遗产|遺產|博物馆|博物館|周年|展览|展覽|节日|電影|电影|纪录片|紀錄片|纪念|紀念|历史|歷史|古代|旅游|旅遊|古迹|演习|演習' },
+  ja: { dmg: '負傷|けが|被害|避難|行方不明|破壊|救助|緊急|被災|閉じ込め|病院', soft: '遺産|博物館|周年|展覧会|祭り|映画|ドキュメンタリー|追悼|歴史|古代|観光|記念碑|訓練|ゲーム' },
+  ko: { dmg: '부상|피해|대피|실종|파괴|구조|긴급|이재민|고립|병원', soft: '유산|박물관|주년|전시|축제|영화|다큐|추모|역사|고대|관광|기념비|훈련|게임' },
+  hi: { dmg: 'घायल|नुकसान|निकासी|लापता|तबाह|बचाव|आपातकाल|फंसे|पीड़ित|अस्पताल', soft: 'विरासत|संग्रहालय|वर्षगांठ|प्रदर्शनी|उत्सव|फिल्म|वृत्तचित्र|श्रद्धांजलि|ऐतिहासिक|प्राचीन|पर्यटन|स्मारक|अभ्यास|खेल' },
+  it: { dmg: 'ferit|danni|evacua|disperso|distrutt|soccorso|emergenza|sfollat|intrappolat|vittime|ospedale', soft: 'patrimonio|museo|anniversario|mostra|festival|film|documentario|commemora|storico|antico|turismo|monumento|esercitazione|videogioco' }
+};
+for (const [l, g] of Object.entries(GUARD)) if (T[l]) Object.assign(T[l], g);
 const NOLEFT = new Set(['ar', ...NOLEFT_EXTRA]);
 const RX = {};
 for (const [lang, groups] of Object.entries(T)) {
@@ -166,6 +184,7 @@ export function classifyLocal(title, summary, lang) {
     : r.health.test(t) ? 'health' : r.disaster.test(t) ? 'disaster' : r.hunger.test(t) ? 'hunger'
     : r.violence.test(t) ? 'conflict' : r.displace.test(t) ? 'displacement' : r.unrest.test(t) ? 'unrest' : r.politics.test(t) ? 'politics' : 'other';
   if (r.sport.test(h) && !hard) return { s: 1, th: 'other' };
+  if (r.soft && r.soft.test(h) && !r.kill.test(t) && !r.dmg.test(t)) return { s: 1, th: 'other' }; // heritage, culture and drills are not incidents
   let n = 0;
   const m = t.match(NEAR[lang]);
   if (m) n = parseInt(String(m[1] || m[2]).replace(/[.,]/g, ''), 10) || 0;
@@ -177,6 +196,7 @@ export function classifyLocal(title, summary, lang) {
   else if (r.kill.test(h) && (r.violence.test(t) || r.disaster.test(t))) s = 3; // fewer than 10 dead, or no number
   else if (th === 'persecution' && (r.harm.test(h) || r.kill.test(h))) s = 4;
     else if (r.health.test(h) || r.hunger.test(h)) s = 4;
+  else if ((r.disaster.test(h) || r.displace.test(h)) && !r.violence.test(h) && !r.unrest.test(h) && r.dmg && !r.kill.test(t) && !r.mass.test(t) && !r.dmg.test(t)) s = 2; // a hazard word with no sign of harm is not an incident
   else if (r.violence.test(h) || r.disaster.test(h) || r.displace.test(h) || r.unrest.test(h)) s = 3;
   else if (th === 'persecution') s = 3;
   else if (r.politics.test(h)) s = 2;
