@@ -29,3 +29,5 @@ A feed enters the registry only if `node pipeline/checkfeeds.mjs` passes it: the
 ## Translation and AI
 
 No AI or translation service is used anywhere in the pipeline. Local-language headlines are shown as written; their link opens a machine-translated page (Google Translate, opened by the reader) with an Original link beside it. The display for an English headline with the original beneath it exists in the page but nothing fills it yet (`pipeline/translate.mjs` is a stub that makes no network calls).
+
+**Browser translation.** In browsers with the built-in on-device Translator (recent desktop Chrome), a "Show local headlines in English" button next to the Weekly / Monthly switch swaps local-language headlines to English as they scroll into view and keeps the original beneath each. It uses no key, no server and no AI API; the language pack downloads to the reader's device on the first click. The choice is remembered per browser. Elsewhere the button stays hidden.
