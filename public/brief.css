@@ -67,6 +67,14 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .cn{font:400 19px Gloock,Georgia,serif;display:flex;gap:10px;align-items:center;letter-spacing:-.01em;transition:color .15s}
 .lv{font:11px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-left:6px}
 .thin{font:10px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--s4);border:1px solid var(--s3);padding:2px 6px;margin-left:8px;white-space:nowrap}
+/* Tags are filled pills; summaries are plain sentences in the body face. */
+.ev .m,.topc .k{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;text-transform:none;letter-spacing:.02em}
+.tag{display:inline-block;font:500 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;padding:5px 8px;background:var(--navy);color:var(--panel);border:1px solid var(--navy);white-space:nowrap}
+.tag.q{background:transparent;color:var(--ink2);border:1px solid var(--rule)}
+.mt{font:12px "IBM Plex Mono",monospace;color:var(--muted)}
+.card .stats{font:400 14.5px/1.55 "Libre Franklin",system-ui,sans-serif;letter-spacing:0;color:var(--ink2);background:var(--sink);border-left:3px solid var(--k);padding:10px 12px;margin:12px 0 8px}
+.card .stats .lab{display:block;font:500 10.5px "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.thin{background:var(--s1);color:var(--s5)}
 .scrollbox{max-height:520px;overflow:auto}
 .scrollbox.tall{max-height:560px}
 .sparkcap{display:flex;justify-content:space-between;font:11px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}

@@ -23,6 +23,7 @@
     var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
     return '<span class="pips" style="--k:' + kc(n) + '" title="severity ' + n + ' of 5">' + h + '</span>';
   }
+  function tag(t, quiet) { return t ? '<span class="tag' + (quiet ? ' q' : '') + '">' + esc(t) + '</span>' : ''; }
   function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
   function fmtDate(iso) { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
   function winLabel() { return view === 'w7' ? 'last 7 days' : 'last 30 days'; }
@@ -74,14 +75,14 @@
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
       '<a class="ev" href="' + esc(u) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
-      '<span class="m">' + esc(e.src) + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + ago(e.d) + '</span></a>' +
+      '<span class="m">' + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
       (withPray ? '<button class="linkbtn" data-pin="' + esc(e.id) + '" data-cc="' + esc(c.cc) + '" type="button">+ Pray</button>' : '<span></span>') + '</div>';
   }
   function countryCard(c, o) {
     o = o || {};
     var w = W(c), done = pray().done[c.cc] === today();
     return '<article class="card" style="--k:' + kc(w.band) + '"><h3><span class="fl">' + c.fl + '</span><a class="cl" href="#c/' + c.cc + '">' + esc(c.k) + '</a>' + bandChip(w.band) + '</h3>' +
-      '<p class="stats"><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p>' +
+      '<p class="stats"><span class="lab">Summary</span><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p>' +
       spark(c) +
       '<div class="prayer">' + esc(c.prayer.text) + '</div>' +
       '<div>' + w.top.slice(0, o.events || 2).map(function (e) { return evRow(e, c, true); }).join('') + '</div>' +
@@ -98,7 +99,7 @@
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
     return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
-      '<span class="m">' + u.fl + ' ' + esc(u.c) + ' · ' + esc(TH[u.th] || '') + ' · ' + u.o + ' outlets · ' + ago(u.d) + '</span></a>' +
+      '<span class="m">' + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a>' +
       '<button class="linkbtn" data-pin="' + esc(u.id) + '" data-cc="' + esc(c.cc) + '" type="button">+ Pray</button></div>';
   }
 
@@ -162,7 +163,7 @@
       return '<a class="topc" href="' + esc(safeUrl(s.u)) + '" target="_blank" rel="noopener">' +
         (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
         '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.h) + '</h4>' +
-        '<p class="k">' + s.fl + ' ' + esc(s.c) + ' · ' + esc(TH[s.th] || '') + ' · ' + ago(s.d) + ' · ' + s.o + ' outlets</p>' + pips(s.s) + '</div></a>';
+        '<p class="k">' + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
     }).join('') || '<div class="empty">No story has two independent outlets in this window yet.</div>';
   }
   function tipFor(c) {
@@ -298,7 +299,7 @@
         var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut; });
         $('arSub').textContent = rows.length + ' of ' + all.length + ' reports';
         $('reports').innerHTML = rows.length ? rows.map(function (r) {
-          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(safeUrl(r.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + esc(r.f) + ' · ' + shortDate(r.d) + ' · ' + esc(TH[r.th] || '') + (r.n > 1 ? ' · one of ' + r.n + ' on this event' : '') + '</span></a><span></span></div>';
+          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(safeUrl(r.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span></a><span></span></div>';
         }).join('') : '<div class="empty">No reports match these filters.</div>';
       }
       ['fSev', 'fTh', 'fWin'].forEach(function (id) { $(id).addEventListener('change', draw); });
