@@ -11,3 +11,7 @@ updates and a personal prayer space. Static site on Cloudflare (Workers static a
   (Workers edit) and `CLOUDFLARE_ACCOUNT_ID`.
 
 Local: `npm ci && node pipeline/run.mjs && npx wrangler deploy`
+
+## Feed registry rule
+
+A feed enters the registry only if `node pipeline/checkfeeds.mjs` passes it: the body parses as RSS, Atom or RDF (an HTML page that returns HTTP 200 fails), it has at least 3 items that each carry a title and an http(s) link, and its **newest** dated item was published within the last 45 days (undated items do not count, future dates are ignored). The same rule is applied on every refresh in `pipeline/run.mjs`: a feed that has gone quiet or stopped parsing is reported as not live in `data/health.json`, and its items are not ingested.

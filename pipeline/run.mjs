@@ -45,8 +45,9 @@ async function fetchFeed(f) {
   const out = [];
   for (const e of arr) {
     const title = clean(e.title), u = linkOf(e);
-    const date = new Date(txt(e.pubDate) || txt(e.published) || txt(e.updated) || txt(e['dc:date']) || NOW);
-    if (!title || !/^https?:/.test(u) || isNaN(date)) { out.push({ bad: 1 }); continue; }
+    const ds = txt(e.pubDate) || txt(e.published) || txt(e.updated) || txt(e['dc:date']), date = new Date(ds);
+    // an item with no usable date, or dated in the future, is not counted: it must not pass as published just now
+    if (!title || !/^https?:/.test(u) || !ds || isNaN(date) || date.getTime() > NOW + DAY) { out.push({ bad: 1 }); continue; }
     const imgRaw = e['media:thumbnail']?.['@_url'] || (Array.isArray(e['media:content']) ? e['media:content'][0] : e['media:content'])?.['@_url'] || (/image/.test(e.enclosure?.['@_type'] || '') ? e.enclosure['@_url'] : '');
     out.push({ title, u, t: Math.min(date.getTime(), NOW), img: /^https:/.test(imgRaw || '') ? imgRaw : '', summary: clean(e.description || e.summary || e['content:encoded'] || '') });
   }
@@ -66,7 +67,7 @@ hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored b
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
 // ── 2. fetch ─────────────────────────────────────────────────────────────────
-const feeds = [...JSON.parse(fs.readFileSync(new URL('./feeds.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local2.json', import.meta.url)))].filter(f => !f.lang || supports(f.lang));
+const feeds = [...JSON.parse(fs.readFileSync(new URL('./feeds.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.en2.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local.json', import.meta.url))), ...JSON.parse(fs.readFileSync(new URL('./feeds.local2.json', import.meta.url)))].filter((f, i, a) => (!f.lang || supports(f.lang)) && a.findIndex(g => g.url === f.url) === i); // one entry per URL
 const health = [];
 let inWindow = 0, bad = 0, fresh = 0;
 const queue = [...feeds];
@@ -75,6 +76,9 @@ await Promise.all(Array.from({ length: 12 }, async () => {
     const f = queue.shift();
     try {
       const items = await fetchFeed(f);
+      // the registry rule is enforced on every run, not only when a feed is added: a feed that has gone quiet or stopped parsing no longer counts as live
+      const dated = items.filter(i => !i.bad), newest = Math.max(0, ...dated.map(i => i.t));
+      if (dated.length < 3 || NOW - newest > 45 * DAY) { health.push({ name: f.name, ok: false, err: dated.length < 3 ? 'fewer than 3 valid items' : 'stale: newest item ' + Math.round((NOW - newest) / DAY) + ' days old' }); continue; }
       let used = 0;
       for (const it of items) {
         if (it.bad) { bad++; continue; }

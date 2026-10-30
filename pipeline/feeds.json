@@ -30,9 +30,14 @@
   "n": 50
  },
  {
+  "name": "Bangkok Post",
+  "url": "https://www.bangkokpost.com/rss/data/topstories.xml",
+  "n": 10
+ },
+ {
   "name": "BBC Africa",
   "url": "https://feeds.bbci.co.uk/news/world/africa/rss.xml",
-  "n": 36
+  "n": 29
  },
  {
   "name": "BBC Asia",
@@ -42,7 +47,7 @@
  {
   "name": "BBC Europe",
   "url": "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
-  "n": 21
+  "n": 24
  },
  {
   "name": "BBC Latin America",
@@ -57,7 +62,7 @@
  {
   "name": "BBC World",
   "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
-  "n": 28
+  "n": 36
  },
  {
   "name": "Catholic News Agency",
@@ -107,7 +112,7 @@
  {
   "name": "Daily Maverick",
   "url": "https://www.dailymaverick.co.za/dmrss/",
-  "n": 52
+  "n": 51
  },
  {
   "name": "Daily Nation",
@@ -117,12 +122,12 @@
  {
   "name": "Dawn",
   "url": "https://www.dawn.com/feeds/home",
-  "n": 28
+  "n": 26
  },
  {
   "name": "DW All",
   "url": "https://rss.dw.com/rdf/rss-en-all",
-  "n": 122
+  "n": 124
  },
  {
   "name": "DW World",
@@ -167,7 +172,7 @@
  {
   "name": "GDACS",
   "url": "https://www.gdacs.org/xml/rss.xml",
-  "n": 264
+  "n": 283
  },
  {
   "name": "Guardian Africa",
@@ -277,7 +282,7 @@
  {
   "name": "NYT Americas",
   "url": "https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml",
-  "n": 42
+  "n": 40
  },
  {
   "name": "NYT Asia Pacific",
@@ -292,12 +297,12 @@
  {
   "name": "NYT Middle East",
   "url": "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",
-  "n": 46
+  "n": 45
  },
  {
   "name": "NYT World",
   "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
-  "n": 54
+  "n": 56
  },
  {
   "name": "Peru Reports",
@@ -382,7 +387,7 @@
  {
   "name": "Times of Israel",
   "url": "https://www.timesofisrael.com/feed/",
-  "n": 15
+  "n": 13
  },
  {
   "name": "UN News",

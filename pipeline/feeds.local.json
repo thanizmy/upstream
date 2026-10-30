@@ -2,7 +2,7 @@
  {
   "name": "14ymedio",
   "url": "https://www.14ymedio.com/rss/",
-  "n": 120,
+  "n": 119,
   "lang": "es",
   "cc": "CU"
  },
@@ -65,6 +65,18 @@
   "lang": "es"
  },
  {
+  "name": "BBC Russian",
+  "url": "https://feeds.bbci.co.uk/russian/rss.xml",
+  "n": 36,
+  "lang": "ru"
+ },
+ {
+  "name": "BBC Swahili",
+  "url": "https://feeds.bbci.co.uk/swahili/rss.xml",
+  "n": 43,
+  "lang": "sw"
+ },
+ {
   "name": "BBC Tiếng Việt",
   "url": "https://feeds.bbci.co.uk/vietnamese/rss.xml",
   "n": 26,
@@ -74,7 +86,7 @@
  {
   "name": "BBC Türkçe",
   "url": "https://feeds.bbci.co.uk/turkce/rss.xml",
-  "n": 16,
+  "n": 17,
   "lang": "tr",
   "cc": "TR"
  },
@@ -258,7 +270,7 @@
  {
   "name": "Le Faso",
   "url": "https://lefaso.net/spip.php?page=backend",
-  "n": 98,
+  "n": 99,
   "lang": "fr",
   "cc": "BF"
  },
@@ -344,7 +356,7 @@
  {
   "name": "Tagesschau",
   "url": "https://www.tagesschau.de/index~rss2.xml",
-  "n": 70,
+  "n": 71,
   "lang": "de"
  },
  {

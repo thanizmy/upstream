@@ -42,6 +42,20 @@
   "cc": "ID"
  },
  {
+  "name": "BBC اردو",
+  "url": "https://feeds.bbci.co.uk/urdu/rss.xml",
+  "n": 21,
+  "lang": "ur",
+  "cc": "PK"
+ },
+ {
+  "name": "BBC فارسی",
+  "url": "https://feeds.bbci.co.uk/persian/rss.xml",
+  "n": 29,
+  "lang": "fa",
+  "cc": "IR"
+ },
+ {
   "name": "BBC हिंदी",
   "url": "https://feeds.bbci.co.uk/hindi/rss.xml",
   "n": 37,
@@ -294,7 +308,7 @@
  {
   "name": "Hürriyet",
   "url": "https://www.hurriyet.com.tr/rss/anasayfa",
-  "n": 66,
+  "n": 65,
   "lang": "tr",
   "cc": "TR"
  },
@@ -332,13 +346,6 @@
   "n": 200,
   "lang": "ru",
   "cc": "RU"
- },
- {
-  "name": "Milliyet",
-  "url": "https://www.milliyet.com.tr/rss/rssnew/gundemrss.xml",
-  "n": 20,
-  "lang": "tr",
-  "cc": "TR"
  },
  {
   "name": "News.am RU",
@@ -398,7 +405,7 @@
  {
   "name": "ORF",
   "url": "https://rss.orf.at/news.xml",
-  "n": 19,
+  "n": 20,
   "lang": "de",
   "cc": "AT"
  },
@@ -586,7 +593,7 @@
  {
   "name": "Коммерсантъ",
   "url": "https://www.kommersant.ru/RSS/news.xml",
-  "n": 548,
+  "n": 549,
   "lang": "ru",
   "cc": "RU"
  },
@@ -607,7 +614,7 @@
  {
   "name": "ТАСС",
   "url": "https://tass.ru/rss/v2.xml",
-  "n": 95,
+  "n": 97,
   "lang": "ru",
   "cc": "RU"
  },
@@ -691,7 +698,7 @@
  {
   "name": "প্রথম আলো",
   "url": "https://www.prothomalo.com/feed",
-  "n": 53,
+  "n": 55,
   "lang": "bn",
   "cc": "BD"
  },
