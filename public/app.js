@@ -32,7 +32,10 @@
     if (e.lg && e.lg.length > 1) o += '<span class="tag x" title="The same event was found in more than one language and counted once">' + e.lg.map(function (g) { return g.toUpperCase(); }).join(' + ') + '</span>';
     return o;
   }
-  function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Headline written in ' + (LANGN[l] || l) + '">' + l.toUpperCase() + '</span>' : ''; }
+  /** Non-English headlines open an English machine translation (Google Translate); the original stays one click away. */
+  function trUrl(u, l) { return l && l !== 'en' && u ? 'https://translate.google.com/translate?sl=auto&tl=en&u=' + encodeURIComponent(u) : u; }
+  function origLink(u, l) { return l && l !== 'en' && u ? '<a class="linkbtn orig" href="' + esc(u) + '" target="_blank" rel="noopener" title="Open the original page, in its own language">Original</a>' : '<span></span>'; }
+  function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Headline written in ' + (LANGN[l] || l) + '. The link opens an English translation.">' + l.toUpperCase() + '</span>' : ''; }
   function tag(t, quiet) { return t ? '<span class="tag' + (quiet ? ' q' : '') + '">' + esc(t) + '</span>' : ''; }
   function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
   function fmtDate(iso) { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
@@ -84,9 +87,9 @@
   function evRow(e, c, withPray) {
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
-      '<a class="ev" href="' + esc(u) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
+      '<a class="ev" href="' + esc(trUrl(u, e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
       '<span class="m">' + srcTags(e) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
-      '<span></span></div>';
+      origLink(u, e.l) + '</div>';
   }
   function countryCard(c, o) {
     o = o || {};
@@ -126,8 +129,8 @@
   }
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
-    return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
-      '<span class="m">' + srcTags(u) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a><span></span></div>';
+    return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(trUrl(url, u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
+      '<span class="m">' + srcTags(u) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a>' + origLink(url, u.l) + '</div>';
   }
 
   /* ── brief ─────────────────────────────────────────── */
@@ -142,7 +145,7 @@
     var wEv = wl.reduce(function (n, c) { return n + W(c).ev; }, 0), wRep = wl.reduce(function (n, c) { return n + W(c).rep; }, 0);
     var lead = wl.slice().sort(function (x, y) { return W(x).rank - W(y).rank; })[0];
     $('heroLine').innerHTML = wl.length
-      ? '<b>' + wHot.length + '</b> of your <b>' + wl.length + '</b> countries ' + (wHot.length === 1 ? 'is' : 'are') + ' at High or Critical in the ' + winLabel() + '. <b>' + wUrgent + '</b> confirmed serious event' + (wUrgent === 1 ? '' : 's') + ' ' + (isW ? 'in the last 72 hours' : 'this month') + (lead ? '. Most urgent: ' + esc(lead.k) + '.' : '.')
+      ? '<b>' + wHot.length + '</b> of your <b>' + wl.length + '</b> countries ' + (wHot.length === 1 ? 'is' : 'are') + ' at High or Critical in the ' + winLabel() + '. <a class="num" href="#sec-urgent" data-goto="sec-urgent" title="See these events"><b>' + wUrgent + '</b></a> confirmed serious event' + (wUrgent === 1 ? '' : 's') + ' ' + (isW ? 'in the last 72 hours' : 'this month') + (lead ? '. Most urgent: <a class="num" href="#c/' + lead.cc + '" title="Open the ' + esc(lead.k) + ' report">' + esc(lead.k) + '</a>.' : '.')
       : 'Add the countries you serve to see your brief here.';
     $('watchKpis').innerHTML = [
       ['Countries you watch', fmt(wl.length)], ['At High or Critical', fmt(wHot.length)], ['Rising', fmt(wUp)],
@@ -150,7 +153,7 @@
     ].map(function (r) { return '<div class="kpi"><b>' + r[1] + '</b><span>' + r[0] + '</span></div>'; }).join('');
     // the whole-world brief, shown just before the map
     $('worldSub').textContent = winLabel();
-    $('worldLine').innerHTML = '<b>' + k.hot + '</b> of ' + k.watched + ' countries with reporting are at High or Critical in the ' + winLabel() + '. <b>' + k.urgent + '</b> confirmed serious events ' + (isW ? 'landed in the last 72 hours' : 'happened this month') + '.';
+    $('worldLine').innerHTML = '<b>' + k.hot + '</b> of ' + k.watched + ' countries with reporting are at High or Critical in the ' + winLabel() + '. <a class="num" href="#sec-urgent" data-goto="sec-urgent" data-open="1" title="See all of them"><b>' + k.urgent + '</b></a> confirmed serious events ' + (isW ? 'landed in the last 72 hours' : 'happened this month') + '.';
     $('kpis').innerHTML = [
       ['Countries with reporting', fmt(k.watched)], ['At High or Critical', fmt(k.hot)], ['Live sources', fmt(D.feeds.ok)],
       ['Reports, ' + winLabel(), fmt(k.reports)], ['Serious events' + (isW ? ', 72h' : ', 30d'), fmt(k.urgent)], ['Held for one source', fmt(k.held)]
@@ -192,7 +195,7 @@
       return '<a class="mv"><span><b>' + esc(TH[t.th] || t.th) + '</b> <span class="flat">· ' + t.cur + ' a day</span></span><span class="' + (up ? 'up' : 'down') + '">' + (t.pct == null ? 'new' : (t.pct > 0 ? '+' : '') + (Math.abs(t.pct) > 500 ? '500+' : t.pct) + '%') + '</span></a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No theme moved sharply.</p>';
     var sud = M.sudden.length ? M.sudden.slice(0, 4).map(function (e) {
-      return '<a class="mv sd" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat">' + esc(e.h) + '</span></span>' + pips(e.s) + '</a>';
+      return '<a class="mv sd" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span><span class="fl">' + e.fl + '</span> <b>' + esc(e.c) + '</b><br><span class="flat">' + esc(e.h) + '</span></span>' + pips(e.s) + '</a>';
     }).join('') : '<p class="flat" style="margin:10px 0 0">No new serious events in the last 48 hours.</p>';
     $('moved').innerHTML = '<div class="cells c4 moved"><div class="cell"><span class="k">Rising fastest</span>' + rows(M.up, 'up') + '</div>' +
       '<div class="cell"><span class="k">Quietening</span>' + rows(M.down, 'down') + '</div>' +
@@ -204,7 +207,7 @@
     $('storiesNote').textContent = 'Ranked by seriousness · two or more outlets';
     $('stories').innerHTML = S.map(function (s, i) {
       var img = safeUrl(s.img);
-      return '<a class="topc" href="' + esc(safeUrl(s.u)) + '" target="_blank" rel="noopener">' +
+      return '<a class="topc" href="' + esc(trUrl(safeUrl(s.u), s.l)) + '" target="_blank" rel="noopener">' +
         (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
         '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.h) + '</h4>' +
         '<p class="k">' + srcTags(s) + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
@@ -308,7 +311,7 @@
       '<div class="sevbar" id="sevbar"></div><div id="themes" class="chips"></div>' +
       '<div class="sechead"><h2>Urgent <i>history</i></h2><span class="sub" id="uhSub">Loading…</span></div><div class="list" id="uh"></div>' +
       '<div class="sechead"><h2>All <i>reports</i></h2><span class="sub" id="arSub"></span></div>' +
-      '<div class="filters"><select id="fSev" aria-label="Minimum severity"><option value="0">All severities</option><option value="3">Severity 3 and up</option><option value="4">Severity 4 and up</option></select>' +
+      '<div class="filters"><input type="search" id="fQ" placeholder="Search these headlines…" aria-label="Search headlines by keyword"><select id="fSev" aria-label="Minimum severity"><option value="0">All severities</option><option value="3">Severity 3 and up</option><option value="4">Severity 4 and up</option></select>' +
       '<select id="fTh" aria-label="Theme"><option value="">All themes</option></select><select id="fWin" aria-label="Period"><option value="40">Everything held</option><option value="30">Last 30 days</option><option value="7">Last 7 days</option></select></div>' +
       '<div class="list scrollbox tall" id="reports"></div>' +
       '<p class="note">Reports at severity 1 are not stored. Headlines link to the publisher; Upstream does not reproduce articles.</p>';
@@ -331,23 +334,27 @@
   function loadProfile(cc) {
     function go(P) {
       var all = [];
-      P.events.forEach(function (e) { e.items.forEach(function (it) { all.push({ t: it.t, u: it.u, f: it.f, d: it.d, s: it.s, th: e.th, n: e.r, eid: e.id }); }); });
+      P.events.forEach(function (e) { e.items.forEach(function (it) { all.push({ t: it.t, u: it.u, f: it.f, l: it.l, d: it.d, s: it.s, th: e.th, n: e.r, eid: e.id }); }); });
       all.sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : b.s - a.s; });
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
-      $('uhSub').textContent = urgent.length + ' serious events in the data we hold';
+      $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 5 shown, scroll for more' : '');
       $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><span></span></div>';
+        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a>' + origLink(safeUrl(e.u), e.l) + '</div>';
       }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
+      cap($('uh'), 5);
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
         var ms = +$('fSev').value, th = $('fTh').value, days = +$('fWin').value, cut = Date.now() - days * 864e5;
-        var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut; });
-        $('arSub').textContent = rows.length + ' of ' + all.length + ' reports';
+        var q = $('fQ').value.trim().toLowerCase();
+        var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut && (!q || (r.t + ' ' + r.f + ' ' + (TH[r.th] || '')).toLowerCase().indexOf(q) >= 0); });
+        $('arSub').textContent = rows.length + ' of ' + all.length + ' reports · first 5 shown, scroll for more';
         $('reports').innerHTML = rows.length ? rows.map(function (r) {
-          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(safeUrl(r.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span></a><span></span></div>';
+          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span></a>' + origLink(safeUrl(r.u), r.l) + '</div>';
         }).join('') : '<div class="empty">No reports match these filters.</div>';
+        cap($('reports'), 5);
       }
       ['fSev', 'fTh', 'fWin'].forEach(function (id) { $(id).addEventListener('change', draw); });
+      $('fQ').addEventListener('input', draw);
       draw();
       profileCache[cc] = P;
     }
@@ -390,7 +397,7 @@
       '<h3>Weekly and monthly</h3><p>Use the Weekly / Monthly switch at the top of the Brief. Monthly figures cover the last 30 days. Upstream began collecting ' + esc(D.historySince) + ', so 30-day change and the own-baseline comparison fill in over time.</p>' +
       '<h3>Your countries and the default five</h3><p>Until you pick your own list, the top shows the five most urgent countries at the moment you open it. Your list and prayer space are stored in this browser only.</p>' +
       '<h3>What it cannot do</h3><ul><li>Severity comes from keyword rules, not a person reading the story. Expect misses and false alarms.</li>' +
-      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, not translated; <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
+      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, and its link opens an English machine translation (an Original link sits beside it); <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
       '<li>A quiet country may only be poorly covered by the feeds. Absence of news is not safety.</li>' +
       '<li>Domestic US news is left out on purpose; this tracks international contexts.</li>' +
       '<li>Country detection reads place names and nationalities in headlines. Headlines that name no place are skipped.</li>' +
@@ -453,6 +460,16 @@
   }
   window.addEventListener('hashchange', route);
   var crowData = {};
+  /** Show only the first n rows of a list; the rest scroll. */
+  function cap(el, n) {
+    if (!el) return;
+    el.style.maxHeight = ''; el.style.overflowY = '';
+    var rows = el.children;
+    if (rows.length > n && rows[n - 1]) {
+      var h = rows[n - 1].offsetTop + rows[n - 1].offsetHeight - rows[0].offsetTop;
+      if (h > 0) { el.style.maxHeight = Math.ceil(h) + 'px'; el.style.overflowY = 'auto'; }
+    }
+  }
   function dayKeyNow() { return new Date().toISOString().slice(0, 10); }
   function crowShow(d, pick) {
     var cc = d.dataset.cc, c = byCc[cc], list = d.querySelector('.cr-list'), cnt = d.querySelector('.cr-count');
@@ -469,6 +486,7 @@
       evs.sort(function (x, y) { return y.s - x.s || (x.last < y.last ? 1 : -1); });
       d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.toggle('sel', !!pick.day && r.dataset.day === pick.day); });
       list.hidden = false;
+      if (d.classList.contains('panelbox')) setTimeout(function () { cap(list, 5); }, 0);
       list.innerHTML = evs.length ? evs.map(function (e) { return evRow(e, c, false); }).join('') : '<div class="empty">No headlines for this selection.</div>';
       cnt.innerHTML = evs.length + ' headline' + (evs.length === 1 ? '' : 's') + ', ' + (pick.day ? esc(label) : label) + ' · most serious first · <button type="button" class="linkbtn" data-clear="' + cc + '">Hide</button>' + (pick.day ? ' · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button>' : '');
     }
@@ -484,6 +502,13 @@
     var d = ev.target; if (d.classList && d.classList.contains('crow') && d.open && !d.dataset.shown) { d.dataset.shown = '1'; crowShow(d, { today: true }); }
   }, true);
   document.addEventListener('click', function (e) {
+    var g = e.target.closest && e.target.closest('a[data-goto]');
+    if (g) {
+      e.preventDefault();
+      var tgt = $(g.dataset.goto); if (g.dataset.open && $('urgentOtherWrap')) $('urgentOtherWrap').open = true;
+      if (tgt) tgt.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      return;
+    }
     if (crowPick(e)) return;
     var b = e.target.closest && e.target.closest('button[data-showall],button[data-clear]'); if (!b) return;
     var d = b.closest('.crow, .panelbox'); if (!d) return;
