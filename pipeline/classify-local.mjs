@@ -129,6 +129,20 @@ const T = {
   }
 };
 
+T.vi = {
+  kill: 'ch[ếe]t|t[ửu] vong|thi[ệe]t m[ạa]ng|gi[ếe]t|s[áa]t h[ạa]i|[sđ]ã thiệt mạng|nạn nhân|hành quyết|chặt đầu',
+  violence: 't[ấa]n c[ôo]ng|đánh bom|v[ụu] n[ổo]|n[ổo] l[ớo]n|b[ắa]n|b[ắa]t c[óo]c|con tin|chi[ếe]n tranh|t[êe]n l[ửu]a|giao tranh|kh[ủu]ng b[ốo]|phục kích|đâm|phiến quân|dân quân|không kích|oanh tạc|xâm lược',
+  disaster: 'đ[ộo]ng đ[ấa]t|l[ũu] l[ụu]t|b[ãa]o|sóng thần|h[ỏo]a ho[ạa]n|ch[áa]y|s[ạa]t l[ởo]|núi l[ửu]a|h[ạa]n h[áa]n|tai n[ạa]n|va ch[ạa]m|ch[ìi]m|đổ s[ậa]p|lốc xoáy|mưa lớn',
+  health: 'd[ịi]ch b[ệe]nh|d[ịi]ch t[ảa]|ebola|s[ởo]i|s[ốo]t rét|s[ốo]t xu[ấa]t huy[ếe]t|đ[ạa]i d[ịi]ch|cúm gia c[ầa]m|bùng phát d[ịi]ch|đ[ậa]u mùa|viêm màng não',
+  hunger: 'n[ạa]n đói|đói kém|suy dinh dưỡng|khủng hoảng lương thực|mất an ninh lương thực',
+  displace: 't[ịi] n[ạa]n|ng[ườu]i t[ịi] n[ạa]n|di t[ảa]n|di c[ưu]|s[ơo] t[áa]n|xin t[ịi] n[ạa]n|không quốc tịch|sơ tán',
+  unrest: 'bi[ểe]u t[ìi]nh|b[ạa]o lo[ạa]n|gi[ớo]i nghiêm|t[ìi]nh tr[ạa]ng kh[ẩa]n c[ấa]p|thi[ếe]t quân lu[ậa]t|đình công|đ[ảa]o chính|đàn áp|nổi dậy|hơi cay|đảo chính',
+  mass: 'th[ảa]m s[áa]t|di[ệe]t ch[ủu]ng|m[ồo] chôn t[ậa]p th[ểe]|t[ộo]i ác ch[ốo]ng nhân loại|thanh lọc sắc tộc|đảo chính',
+  persecute: 'kitô|ki-tô|nhà th[ờo]|m[ụu]c s[ưu]|giám m[ụu]c|linh m[ụu]c|nữ tu|truyền giáo|tin lành|t[ựu] do tôn giáo|đàn áp tôn giáo|bách hại|phỉ báng',
+  harm: 'b[ắa]t gi[ữu]|b[ắa]t|t[ùu]|k[ếe]t án|tr[ụu]c xu[ấa]t|đe d[ọo]a|tra t[ấa]n|đ[ốo]t|c[ấa]m|t[ấa]n c[ôo]ng',
+  politics: 'b[ầa]u c[ửu]|qu[ốo]c h[ộo]i|b[ộo] tr[ưu][ởo]ng|t[ổo]ng th[ốo]ng|chính ph[ủu]|tr[ừu]ng ph[ạa]t|h[ộo]i ngh[ịi] th[ưu][ợo]ng đ[ỉi]nh|hi[ệe]p ư[ớo]c|ng[ừu]ng b[ắa]n|đàm phán|ngo[ạa]i giao|tr[ưu]ng c[ầa]u|thủ tướng',
+  sport: 'bóng đá|gi[ảa]i vô đ[ịi]ch|world cup|tennis|hòa nh[ạa]c|phim|ngôi sao|thời trang|công th[ứu]c|tử vi|ca sĩ'
+};
 const NOLEFT = new Set(['ar']);
 const RX = {};
 for (const [lang, groups] of Object.entries(T)) {
@@ -138,10 +152,11 @@ for (const [lang, groups] of Object.entries(T)) {
 const KILL_NEAR = lang => new RegExp('(\\d[\\d.,]*)\\s{0,3}(?:\\p{L}+\\s+){0,2}(?:' + T[lang].kill + ')|(?:' + T[lang].kill + ')\\p{L}*\\s{0,3}(?:\\p{L}+\\s+){0,2}(\\d[\\d.,]*)', 'iu');
 const NEAR = Object.fromEntries(Object.keys(T).map(l => [l, KILL_NEAR(l)]));
 
-export const LANG_NAME = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic' };
+export const LANG_NAME = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese' };
 export const supports = lang => !!RX[lang];
 
 export function classifyLocal(title, summary, lang) {
+  title = title.normalize('NFC'); summary = summary.normalize('NFC');
   const r = RX[lang];
   const h = title, t = title + ' . ' + summary.slice(0, 240);
   const hard = r.kill.test(h) || r.violence.test(h) || r.disaster.test(h) || r.health.test(h);

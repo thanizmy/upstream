@@ -1,5 +1,4 @@
-[
-["BBC Mundo","https://feeds.bbci.co.uk/mundo/rss.xml","es",""],
+[["BBC Mundo","https://feeds.bbci.co.uk/mundo/rss.xml","es",""],
 ["DW Español","https://rss.dw.com/rdf/rss-sp-all","es",""],
 ["France 24 Español","https://www.france24.com/es/rss","es",""],
 ["RFI Español","https://www.rfi.fr/es/rss","es",""],
@@ -75,5 +74,18 @@
 ["DW Türkçe","https://rss.dw.com/rdf/rss-tr-all","tr",""],
 ["BBC Swahili","https://feeds.bbci.co.uk/swahili/rss.xml","sw",""],
 ["DW Kiswahili","https://rss.dw.com/rdf/rss-sw-all","sw",""],
-["VOA Swahili","https://www.voaswahili.com/api/zmgqoe-vomx-tpeivmy","sw",""]
-]
+["VOA Swahili","https://www.voaswahili.com/api/zmgqoe-vomx-tpeivmy","sw",""],
+["VnExpress Thế giới","https://vnexpress.net/rss/the-gioi.rss","vi","VN"],
+["VnExpress Thời sự","https://vnexpress.net/rss/thoi-su.rss","vi","VN"],
+["VietnamNet Thế giới","https://vietnamnet.vn/rss/the-gioi.rss","vi","VN"],
+["VietnamNet Thời sự","https://vietnamnet.vn/rss/thoi-su.rss","vi","VN"],
+["Tuổi Trẻ Thế giới","https://tuoitre.vn/rss/the-gioi.rss","vi","VN"],
+["Tuổi Trẻ Thời sự","https://tuoitre.vn/rss/thoi-su.rss","vi","VN"],
+["Thanh Niên Thế giới","https://thanhnien.vn/rss/the-gioi.rss","vi","VN"],
+["Dân trí Thế giới","https://dantri.com.vn/rss/the-gioi.rss","vi","VN"],
+["Dân trí Thời sự","https://dantri.com.vn/rss/xa-hoi.rss","vi","VN"],
+["Zing News","https://znews.vn/rss/the-gioi.rss","vi","VN"],
+["Báo Mới","https://baomoi.com/rss/the-gioi.rss","vi","VN"],
+["BBC Tiếng Việt","https://feeds.bbci.co.uk/vietnamese/rss.xml","vi","VN"],
+["VOV","https://vov.vn/rss/the-gioi-4.rss","vi","VN"],
+["Nhân Dân","https://nhandan.vn/rss/thegioi-1231.rss","vi","VN"]]

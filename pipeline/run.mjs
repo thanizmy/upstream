@@ -38,7 +38,7 @@ async function fetchFeed(f) {
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const buf = Buffer.from(await r.arrayBuffer());
   const enc = (/encoding=["']([w-]+)/i.exec(buf.subarray(0, 200).toString('latin1')) || /charset=([w-]+)/i.exec(r.headers.get('content-type') || '') || [])[1] || 'utf-8';
-  let body; try { body = new TextDecoder(enc).decode(buf); } catch { body = buf.toString('utf8'); }
+  let body; try { body = new TextDecoder(enc, { fatal: true }).decode(buf); } catch { try { body = new TextDecoder('windows-1252').decode(buf); } catch { body = buf.toString('utf8'); } } // a feed may declare one charset and send another
   const x = xml.parse(body);
   const raw = x?.rss?.channel?.item || x?.feed?.entry || x?.['rdf:RDF']?.item || [];
   const arr = (Array.isArray(raw) ? raw : [raw]).filter(Boolean);
@@ -62,6 +62,7 @@ try {
   } else if (fs.existsSync(path.join(OUT, 'history.json'))) hist = JSON.parse(fs.readFileSync(path.join(OUT, 'history.json'), 'utf8'));
 } catch (e) { console.warn('history load failed, starting fresh:', e.message); }
 hist.items = hist.items.filter(i => !i.t.includes('�')); // drop headlines stored before charset decoding was added
+hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored before charset handling was fixed
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
 // ── 2. fetch ─────────────────────────────────────────────────────────────────
@@ -99,6 +100,9 @@ const feedsOk = health.filter(h => h.ok).length;
 console.log(`feeds ok ${feedsOk}/${feeds.length}, new tagged items ${fresh}, bad items ${bad}`);
 if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keeping previous output'); process.exit(1); }
 
+// local-language headlines are re-placed each run, so improvements to country names also fix items stored earlier
+const homeByFeed = Object.fromEntries(feeds.map(f => [f.name, f.cc || FEED_HINT[f.name]]));
+for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).slice(0, 3); const alt = cc.length ? cc : homeByFeed[it.f] ? [homeByFeed[it.f]] : it.cc; it.cc = alt; }
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
 // ── 3. cluster into unique events (per country) ──────────────────────────────
 const STOP = new Set('los las del que con por para una uno sus más como este esta tras sobre entre desde les des une pour dans par sur avec aux est sont plus cette après contre dos das uma mais após der die das und mit von für auf den dem ein eine nach über bei zum zur ist sind the and for with from that this have has will after over into about than their they were been are was its not but who how what when where why says said say new more news amid as of in on at to by is it be an a or up out off could would may after before during against'.split(' '));
@@ -107,6 +111,24 @@ function similar(A, B) {
   let n = 0; for (const w of A) if (B.has(w)) n++;
   return n >= 3 && (n / Math.min(A.size, B.size) >= 0.5 || n / (A.size + B.size - n) >= 0.4);
 }
+// where each outlet is based (set per feed, or by the FEED_HINT list); "local" means an outlet from the event's own country
+const feedHome = {}; for (const f of feeds) { const hc = f.cc || FEED_HINT[f.name]; if (hc) feedHome[f.name] = hc; }
+const fold = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+/** Names and numbers in a headline, accent-folded, so the same event in two languages can be recognised. */
+function keysOf(t) {
+  const out = new Set();
+  t.split(/[\s,;:()"'\u2018\u2019\u201C\u201D\-\u2013\u2014]+/).forEach((w, i) => {
+    const f = fold(w.replace(/[^\p{L}\p{N}]/gu, '')); if (!f) return;
+    if (/^\d{2,}$/.test(f)) { const n = +f; if (n < 1900 || n > 2100) out.add(f); }
+    else if (i > 0 && /^\p{Lu}/u.test(w) && f.length > 3) out.add(f);
+  });
+  return out;
+}
+const sameAcrossLanguages = (a, b) => {
+  if ((a.l || 'en') === (b.l || 'en') || a.th !== b.th || Math.abs(a.d - b.d) > 2 * DAY) return false;
+  let n = 0; for (const k of a.K) if (b.K.has(k)) n++;
+  return n >= 2;
+};
 const perCountry = {};
 for (const it of items) for (const cc of it.cc) if (COUNTRIES[cc]) (perCountry[cc] ||= []).push(it);
 
@@ -115,14 +137,14 @@ for (const [cc, list] of Object.entries(perCountry)) {
   list.sort((a, b) => a.d - b.d);
   const cl = [];
   for (const it of list) {
-    const T = toks(it.t);
+    const T = toks(it.t), K = keysOf(it.t);
     let c = null;
     for (let i = cl.length - 1; i >= 0 && !c; i--) {
       if (it.d - cl[i].last > 3 * DAY) continue;
-      if (cl[i].items.some(x => similar(T, x.T))) c = cl[i];
+      if (cl[i].items.some(x => similar(T, x.T) || sameAcrossLanguages({ ...it, K }, x))) c = cl[i];
     }
     if (!c) { c = { items: [], last: it.d }; cl.push(c); }
-    c.items.push({ ...it, T }); c.last = it.d;
+    c.items.push({ ...it, T, K }); c.last = it.d;
   }
   events[cc] = cl.map(c => {
     const outlets = new Set(c.items.map(x => x.h));
@@ -132,8 +154,10 @@ for (const [cc, list] of Object.entries(perCountry)) {
     if (s === 5 && conf < 2) s = 4; // one source alone cannot make a severity-5 event
     const rep = c.items.filter(x => x.s === smax).sort((a, b) => a.d - b.d)[0];
     const themes = {}; c.items.forEach(x => { themes[x.th] = (themes[x.th] || 0) + 1; });
+    const localHosts = new Set(c.items.filter(x => feedHome[x.f] === cc).map(x => x.h));
+    const langs = [...new Set(c.items.map(x => x.l || 'en'))].sort();
     return { id: hash(cc + rep.id), cc, h: rep.t, u: rep.u, s, th: Object.entries(themes).sort((a, b) => b[1] - a[1])[0][0],
-      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
+      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), ...(localHosts.size ? { lo: localHosts.size } : {}), ...(langs.length > 1 ? { lg: langs } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
       hosts: [...outlets], T: rep.T,
       items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s, ...(x.l ? { l: x.l } : {}) })) };
   });
@@ -192,9 +216,10 @@ function windowStats(evs, days, z) {
     maxSev: Math.max(0, ...w.map(e => e.s)), band, sev: cnt.slice(1), th, chg
   };
 }
+const tg = e => ({ ...(e.l ? { l: e.l } : {}), ...(e.lo ? { lo: e.lo } : {}), ...(e.lg ? { lg: e.lg } : {}) });
 const topOf = (evs, days, n) => [...evs].filter(e => e.last > NOW - days * DAY)
   .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last).slice(0, n)
-  .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src, ...(e.l ? { l: e.l } : {}) }));
+  .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src, ...tg(e) }));
 
 const countries = [];
 for (const [cc, evs] of Object.entries(events)) {
@@ -227,7 +252,7 @@ countries.sort((a, b) => a.w7.rank - b.w7.rank);
 // ── 5. headline figures, stories, movement, gaps ─────────────────────────────
 const allEv = Object.values(events).flat();
 const cname = cc => COUNTRIES[cc].k;
-const slim = e => ({ id: e.id, cc: e.cc, c: cname(e.cc), fl: COUNTRIES[e.cc].fl, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, d: dayKey(e.last), src: e.src, ...(e.l ? { l: e.l } : {}) });
+const slim = e => ({ id: e.id, cc: e.cc, c: cname(e.cc), fl: COUNTRIES[e.cc].fl, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, d: dayKey(e.last), src: e.src, ...tg(e) });
 function urgentSince(days, n) {
   return allEv.filter(e => e.s >= 4 && e.last > NOW - days * DAY && e.conf >= 2)
     .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last)
@@ -292,7 +317,7 @@ for (const c of countries) {
   const evs = events[c.cc].filter(e => e.last > NOW - 40 * DAY).sort((a, b) => b.last - a.last);
   fs.writeFileSync(path.join(OUT, 'c', c.cc + '.json'), JSON.stringify({
     cc: c.cc, generated: brief.generated,
-    events: evs.map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), last: dayKey(e.last), src: e.src, ...(e.l ? { l: e.l } : {}), items: e.items }))
+    events: evs.map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), last: dayKey(e.last), src: e.src, ...tg(e), items: e.items }))
   }));
 }
 fs.writeFileSync(path.join(OUT, 'brief.json'), JSON.stringify(brief));

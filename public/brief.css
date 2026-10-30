@@ -174,3 +174,6 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .panelbox .cr-count{margin:12px 0 6px}
 .panelbox .cr-list{max-height:420px;overflow:auto;border-top:1px solid var(--hair)}
 .panelbox .cr-list .urow{padding:12px 0}
+
+.tag.local{background:var(--teal,#085F66);color:#fff;border-color:transparent}
+.tag.x{background:transparent;color:var(--ink2);border:1px solid var(--ink2)}

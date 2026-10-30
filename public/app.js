@@ -23,8 +23,16 @@
     var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
     return '<span class="pips" style="--k:' + kc(n) + '" title="severity ' + n + ' of 5">' + h + '</span>';
   }
-  var LANGN = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic' };
-  function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Local-language headline, ' + (LANGN[l] || l) + '">' + l.toUpperCase() + ' · local</span>' : ''; }
+  var LANGN = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese' };
+  /** Where the headline comes from: the country's own outlets, its language, and whether other languages back it up. */
+  function srcTags(e) {
+    var o = '';
+    if (e.lo) o += '<span class="tag local" title="' + e.lo + ' outlet' + (e.lo > 1 ? 's' : '') + ' based in this country reported this">Local source' + (e.lo > 1 ? 's \u00d7' + e.lo : '') + '</span>';
+    o += lang(e.l);
+    if (e.lg && e.lg.length > 1) o += '<span class="tag x" title="The same event was found in more than one language and counted once">' + e.lg.map(function (g) { return g.toUpperCase(); }).join(' + ') + '</span>';
+    return o;
+  }
+  function lang(l) { return l && l !== 'en' ? '<span class="tag lang" title="Headline written in ' + (LANGN[l] || l) + '">' + l.toUpperCase() + '</span>' : ''; }
   function tag(t, quiet) { return t ? '<span class="tag' + (quiet ? ' q' : '') + '">' + esc(t) + '</span>' : ''; }
   function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
   function fmtDate(iso) { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
@@ -77,7 +85,7 @@
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
       '<a class="ev" href="' + esc(u) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span>' +
-      '<span class="m">' + lang(e.l) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
+      '<span class="m">' + srcTags(e) + tag(TH[e.th]) + tag(e.o + ' outlet' + (e.o > 1 ? 's' : ''), 1) + '<span class="mt">' + esc(e.src) + ' · ' + ago(e.d) + '</span></span></a>' +
       '<span></span></div>';
   }
   function countryCard(c, o) {
@@ -102,7 +110,7 @@
     var w = W(c), lead = w.top[0];
     return '<details class="crow" data-cc="' + c.cc + '" style="--k:' + kc(w.band) + '"><summary>' +
       '<div class="cr-name"><span class="fl">' + c.fl + '</span><a class="cl" href="#c/' + c.cc + '">' + esc(c.k) + '</a>' + bandChip(w.band) + '</div>' +
-      '<div class="cr-sum"><p class="cr-head">' + (lead ? lang(lead.l) + tag(TH[lead.th]) + '<span>' + esc(lead.h) + '</span>' : 'No reports in this window') + '</p>' +
+      '<div class="cr-sum"><p class="cr-head">' + (lead ? srcTags(lead) + tag(TH[lead.th]) + '<span>' + esc(lead.h) + '</span>' : 'No reports in this window') + '</p>' +
       '<p class="cr-stats"><span class="lab">Summary</span><b>' + w.ev + '</b> events · ' + w.rep + ' reports · ' + w.src + ' outlets · ' + chgHtml(w) + (w.thin ? ' <span class="thin">thin coverage</span>' : '') + '</p></div>' +
       '<div class="cr-gfx">' + spark(c, false, true) + '</div><span class="cr-chev" aria-hidden="true"></span></summary>' +
       '<div class="cr-body"><div class="prayer">' + esc(c.prayer.text) + '</div>' +
@@ -119,7 +127,7 @@
   function urgentRow(u) {
     var url = safeUrl(u.u), c = byCc[u.cc] || { cc: u.cc };
     return '<div class="urow"><span>' + pips(u.s) + '</span><a class="ev" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span>' +
-      '<span class="m">' + lang(u.l) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a><span></span></div>';
+      '<span class="m">' + srcTags(u) + tag(TH[u.th]) + tag(u.o + ' outlets', 1) + '<span class="mt">' + u.fl + ' ' + esc(u.c) + ' · ' + ago(u.d) + '</span></span></a><span></span></div>';
   }
 
   /* ── brief ─────────────────────────────────────────── */
@@ -182,7 +190,7 @@
       return '<a class="topc" href="' + esc(safeUrl(s.u)) + '" target="_blank" rel="noopener">' +
         (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
         '<div class="b"><span class="num">0' + (i + 1) + '</span><h4>' + esc(s.h) + '</h4>' +
-        '<p class="k">' + lang(s.l) + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
+        '<p class="k">' + srcTags(s) + tag(TH[s.th]) + tag(s.o + ' outlets', 1) + '<span class="mt">' + s.fl + ' ' + esc(s.c) + ' · ' + ago(s.d) + '</span></p>' + pips(s.s) + '</div></a>';
     }).join('') || '<div class="empty">No story has two independent outlets in this window yet.</div>';
   }
   function tipFor(c) {
@@ -310,7 +318,7 @@
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
       $('uhSub').textContent = urgent.length + ' serious events in the data we hold';
       $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + lang(e.l) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><span></span></div>';
+        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><span></span></div>';
       }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
@@ -364,7 +372,7 @@
       '<h3>Weekly and monthly</h3><p>Use the Weekly / Monthly switch at the top of the Brief. Monthly figures cover the last 30 days. Upstream began collecting ' + esc(D.historySince) + ', so 30-day change and the own-baseline comparison fill in over time.</p>' +
       '<h3>Your countries and the default five</h3><p>Until you pick your own list, the top shows the five most urgent countries at the moment you open it. Your list and prayer space are stored in this browser only.</p>' +
       '<h3>What it cannot do</h3><ul><li>Severity comes from keyword rules, not a person reading the story. Expect misses and false alarms.</li>' +
-      '<li>Local-language headlines are shown as written, tagged with their language, and are not machine-translated. They are grouped only with other headlines in the same language, so one incident covered in two languages can count as two events.</li>' +
+      '<li>Tags on a headline: <b>Local source</b> means an outlet based in that country reported it; a language code (VI, ES, FR…) means the headline is written in that language and is shown as written, not translated; <b>EN + VI</b> means the same event was found in more than one language and counted once. Matching across languages uses shared names and numbers, so it is approximate: some duplicates are missed and a few unrelated stories may be joined.</li>' +
       '<li>A quiet country may only be poorly covered by the feeds. Absence of news is not safety.</li>' +
       '<li>Domestic US news is left out on purpose; this tracks international contexts.</li>' +
       '<li>Country detection reads place names and nationalities in headlines. Headlines that name no place are skipped.</li>' +

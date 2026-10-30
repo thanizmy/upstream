@@ -62,6 +62,10 @@ for (const [cc, list] of Object.entries(MANUAL)) {
   if (!COUNTRIES[cc]) continue;
   list.forEach(a => { aliasToCc.set(a, cc); });
 }
+const VI_NAMES = { RU: ['Nga'], CN: ['Trung Quốc'], KR: ['Hàn Quốc'], KP: ['Triều Tiên'], JP: ['Nhật Bản'], TH: ['Thái Lan'], KH: ['Campuchia'], LA: ['Lào'],
+  IN: ['Ấn Độ'], FR: ['Pháp'], DE: ['Đức'], VN: ['Việt Nam'], HK: ['Hồng Kông'], TW: ['Đài Loan'], SA: ['Ả Rập Xê Út'], TR: ['Thổ Nhĩ Kỳ'], EG: ['Ai Cập'],
+  NL: ['Hà Lan'], UA: ['Ukraina'], PH: ['Philippines'], MM: ['Myanmar'], PS: ['Palestine'], IL: ['Israel'], SG: ['Singapore'], AU: ['Úc'], PL: ['Ba Lan'], IT: ['Italia'], ES: ['Tây Ban Nha'], PT: ['Bồ Đào Nha'], GR: ['Hy Lạp'], CH: ['Thụy Sĩ'], SE: ['Thụy Điển'], NO: ['Na Uy'], DK: ['Đan Mạch'], FI: ['Phần Lan'], BE: ['Bỉ'], AT: ['Áo'], ZA: ['Nam Phi'], IQ: ['Iraq'], BR: ['Brazil'], MX: ['Mexico'], CA: ['Canada'] };
+for (const [cc, list] of Object.entries(VI_NAMES)) if (COUNTRIES[cc]) list.forEach(a => aliasToCc.set(a, cc));
 aliasToCc.delete('Georgia'); aliasToCc.set('Georgia (country)', 'GE'); aliasToCc.set('Tbilisi', 'GE'); aliasToCc.set('Georgian government', 'GE');
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

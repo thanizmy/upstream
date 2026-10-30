@@ -2,7 +2,7 @@
  {
   "name": "14ymedio",
   "url": "https://www.14ymedio.com/rss/",
-  "n": 122,
+  "n": 120,
   "lang": "es",
   "cc": "CU"
  },
@@ -41,7 +41,7 @@
  {
   "name": "BBC Arabic",
   "url": "https://feeds.bbci.co.uk/arabic/rss.xml",
-  "n": 27,
+  "n": 26,
   "lang": "ar"
  },
  {
@@ -65,10 +65,11 @@
   "lang": "es"
  },
  {
-  "name": "BBC Russian",
-  "url": "https://feeds.bbci.co.uk/russian/rss.xml",
-  "n": 40,
-  "lang": "ru"
+  "name": "BBC Tiếng Việt",
+  "url": "https://feeds.bbci.co.uk/vietnamese/rss.xml",
+  "n": 26,
+  "lang": "vi",
+  "cc": "VN"
  },
  {
   "name": "BBC Türkçe",
@@ -99,16 +100,23 @@
   "cc": "NI"
  },
  {
+  "name": "Dân trí Thế giới",
+  "url": "https://dantri.com.vn/rss/the-gioi.rss",
+  "n": 100,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
   "name": "Diario Libre",
   "url": "https://www.diariolibre.com/rss/portada.xml",
-  "n": 35,
+  "n": 34,
   "lang": "es",
   "cc": "DO"
  },
  {
   "name": "DW Arabic",
   "url": "https://rss.dw.com/rdf/rss-ar-all",
-  "n": 49,
+  "n": 48,
   "lang": "ar"
  },
  {
@@ -145,7 +153,7 @@
  {
   "name": "El País América",
   "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/america/portada",
-  "n": 121,
+  "n": 122,
   "lang": "es"
  },
  {
@@ -229,7 +237,7 @@
  {
   "name": "La Nación Argentina",
   "url": "https://www.lanacion.com.ar/arc/outboundfeeds/rss/",
-  "n": 93,
+  "n": 91,
   "lang": "es",
   "cc": "AR"
  },
@@ -281,6 +289,13 @@
   "lang": "ru"
  },
  {
+  "name": "Nhân Dân",
+  "url": "https://nhandan.vn/rss/thegioi-1231.rss",
+  "n": 50,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
   "name": "Público Portugal",
   "url": "https://feeds.feedburner.com/PublicoRSS",
   "n": 10,
@@ -304,7 +319,7 @@
  {
   "name": "RFI Español",
   "url": "https://www.rfi.fr/es/rss",
-  "n": 28,
+  "n": 27,
   "lang": "es"
  },
  {
@@ -329,7 +344,7 @@
  {
   "name": "Tagesschau",
   "url": "https://www.tagesschau.de/index~rss2.xml",
-  "n": 73,
+  "n": 70,
   "lang": "de"
  },
  {
@@ -340,6 +355,13 @@
   "cc": "ID"
  },
  {
+  "name": "Thanh Niên Thế giới",
+  "url": "https://thanhnien.vn/rss/the-gioi.rss",
+  "n": 50,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
   "name": "TSA Algérie",
   "url": "https://www.tsa-algerie.com/feed/",
   "n": 10,
@@ -347,10 +369,59 @@
   "cc": "DZ"
  },
  {
+  "name": "Tuổi Trẻ Thế giới",
+  "url": "https://tuoitre.vn/rss/the-gioi.rss",
+  "n": 50,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "Tuổi Trẻ Thời sự",
+  "url": "https://tuoitre.vn/rss/thoi-su.rss",
+  "n": 50,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
   "name": "Ukrainska Pravda",
   "url": "https://www.pravda.com.ua/rss/",
   "n": 20,
   "lang": "ru",
   "cc": "UA"
+ },
+ {
+  "name": "VietnamNet Thế giới",
+  "url": "https://vietnamnet.vn/rss/the-gioi.rss",
+  "n": 1000,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "VietnamNet Thời sự",
+  "url": "https://vietnamnet.vn/rss/thoi-su.rss",
+  "n": 1000,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "VnExpress Thế giới",
+  "url": "https://vnexpress.net/rss/the-gioi.rss",
+  "n": 60,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "VnExpress Thời sự",
+  "url": "https://vnexpress.net/rss/thoi-su.rss",
+  "n": 60,
+  "lang": "vi",
+  "cc": "VN"
+ },
+ {
+  "name": "Zing News",
+  "url": "https://znews.vn/rss/the-gioi.rss",
+  "n": 24,
+  "lang": "vi",
+  "cc": "VN"
  }
 ]
