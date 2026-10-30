@@ -30,6 +30,7 @@
 
   <!-- BRIEF -->
   <section id="tab-brief" class="tab">
+    <nav class="secnav" id="secnav" aria-label="Brief sections"><div class="secin"><button type="button" data-sec="sec-watch">Your countries</button><button type="button" data-sec="sec-urgent">Urgent</button><button type="button" data-sec="sec-moved">What moved</button><button type="button" data-sec="sec-stories">Top stories</button><button type="button" data-sec="sec-map">World map</button><button type="button" data-sec="sec-need">Where need is greatest</button><button type="button" data-sec="sec-gaps">Blind spots</button><button type="button" data-sec="sec-method">How it is built</button></div></nav>
     <div class="hero">
       <p class="eyebrow" id="dateline">Loading…</p>
       <h1 id="heroLine">Reading the world for you…</h1>
@@ -43,31 +44,31 @@
     </div>
     <div class="kpis" id="kpis"></div>
 
-    <div class="sechead"><h2>Your <i>countries</i></h2><span class="sub" id="watchMode"></span></div>
+    <div class="sechead" id="sec-watch"><h2>Your <i>countries</i></h2><span class="sub" id="watchMode"></span></div>
     <div class="chips" id="chips"></div>
     <div class="cards" id="watch"></div>
 
-    <div class="sechead"><h2>What is <i>urgent</i> right now</h2><span class="sub" id="urgentCount"></span></div>
+    <div class="sechead" id="sec-urgent"><h2>What is <i>urgent</i> right now</h2><span class="sub" id="urgentCount"></span></div>
     <div class="list" id="urgentMine"></div>
     <details class="more" id="urgentOtherWrap">
       <summary id="urgentOtherLabel">Elsewhere in the world</summary>
       <div class="list scrollbox" id="urgentOther"></div>
     </details>
 
-    <div class="sechead"><h2 id="movedH">What <i>moved</i> this week</h2><span class="sub" id="movedBasis"></span></div>
+    <div class="sechead" id="sec-moved"><h2 id="movedH">What <i>moved</i> this week</h2><span class="sub" id="movedBasis"></span></div>
     <div id="moved"></div>
 
-    <div class="sechead"><h2>The five stories to <i>know</i></h2><span class="sub" id="storiesNote"></span></div>
+    <div class="sechead" id="sec-stories"><h2>The five stories to <i>know</i></h2><span class="sub" id="storiesNote"></span></div>
     <div class="stories" id="stories"></div>
 
-    <div class="sechead"><h2>The world at a <i>glance</i></h2><span class="sub" id="mapStat"></span></div>
+    <div class="sechead" id="sec-map"><h2>The world at a <i>glance</i></h2><span class="sub" id="mapStat"></span></div>
     <div class="mapwrap">
       <div class="mapscroll"><div id="map" class="mapbox"></div></div>
       <div class="maplegend" id="maplegend"></div>
     </div>
     <div class="scroll" style="margin-top:18px"><table id="regions"></table></div>
 
-    <div class="sechead"><h2>Where is the need <i>greatest</i>?</h2><span class="sub" id="needStat"></span></div>
+    <div class="sechead" id="sec-need"><h2>Where is the need <i>greatest</i>?</h2><span class="sub" id="needStat"></span></div>
     <p class="note" style="margin-top:0">Every country with recent reporting. Few sources next to a high level means a gap in monitoring, not a calm country. Select a country for its full report.</p>
     <div class="filters">
       <input type="search" id="q" placeholder="Search a country…" aria-label="Search a country">
@@ -81,7 +82,7 @@
     </div>
     <div class="scroll need" id="needWrap"><table id="need"></table></div>
 
-    <div class="sechead"><h2>What we <i>cannot</i> see</h2></div>
+    <div class="sechead" id="sec-gaps"><h2>What we <i>cannot</i> see</h2></div>
     <div class="cells c3" id="gaps"></div>
     <div id="gapChips" class="chips" style="margin-top:18px"></div>
 
@@ -91,7 +92,7 @@
       <p><b>What is the state of the country?</b> The level on each card and in the table answers that. It counts unique events weighted by seriousness, so a quiet stream of reports is not mistaken for nothing happening, and a flood of articles about one incident is not mistaken for a crisis.</p>
     </div>
 
-    <div class="sechead"><h2>How this is <i>built</i></h2></div>
+    <div class="sechead" id="sec-method"><h2>How this is <i>built</i></h2></div>
     <div class="cells c3" id="method"></div>
 
     <div class="sechead"><h2>Go <i>deeper</i></h2></div>

@@ -408,6 +408,27 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
+  /* section bar: scroll to a section, and highlight the one in view */
+  function secBar() {
+    var bar = $('secnav'); if (!bar) return;
+    var btns = bar.querySelectorAll('button');
+    function sizes() { var hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px'); document.documentElement.style.setProperty('--sh', bar.offsetHeight + 'px'); }
+    function spy() {
+      if ($('tab-brief').hidden) return;
+      var y = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hh'), 10) || 68) + bar.offsetHeight + 24, cur = null;
+      btns.forEach(function (b) { var el = $(b.dataset.sec); if (el && el.getBoundingClientRect().top <= y) cur = b; });
+      btns.forEach(function (b) { b.classList.toggle('on', b === cur); });
+      if (cur) { var r = cur.getBoundingClientRect(), p = cur.parentNode; if (r.left < 0 || r.right > innerWidth) p.scrollTo({ left: cur.offsetLeft - 24, behavior: 'smooth' }); }
+    }
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-sec]'); if (!b) return;
+      var el = $(b.dataset.sec); if (el) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    });
+    window.addEventListener('scroll', spy, { passive: true });
+    window.addEventListener('resize', function () { sizes(); spy(); });
+    sizes(); spy();
+  }
+  secBar();
 
   function refreshAll() {
     renderBrief(); renderPrayer();

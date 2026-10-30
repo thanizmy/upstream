@@ -102,3 +102,13 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .empty.list{padding:22px var(--gut)}
 
 .tag.lang{background:var(--sink);color:var(--ink);border:1px dashed var(--ink2)}
+
+/* Section bar: sticks under the masthead on the Brief and highlights the section in view. */
+:root{--hh:68px;--sh:50px}
+.secnav{position:sticky;top:var(--hh);z-index:30;background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);margin:0 calc(var(--gut) * -1)}
+.secin{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding:0 var(--gut)}
+.secin::-webkit-scrollbar{display:none}
+.secin button{flex:none;font:500 11.5px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;min-height:var(--sh);padding:0 14px;cursor:pointer;white-space:nowrap;transition:color .18s,border-color .18s,background .18s}
+.secin button:hover{color:var(--navy);background:var(--sink)}
+.secin button.on{color:var(--navy);border-bottom-color:var(--navy)}
+#tab-brief .sechead{scroll-margin-top:calc(var(--hh) + var(--sh) + 10px)}
