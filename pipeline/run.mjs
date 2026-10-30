@@ -125,7 +125,7 @@ for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).sli
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
 // English translations of local-language headlines (only when a translation provider is configured)
 const tr = await translatePending(items);
-console.log(tr.off ? 'translation: off (set ANTHROPIC_API_KEY to turn on)' : `translation: ${tr.done}/${tr.tried} headlines${tr.error ? ', stopped: ' + tr.error : ''}`);
+console.log(tr.off ? 'translation: not in use' : `translation: ${tr.done}/${tr.tried} headlines${tr.error ? ', stopped: ' + tr.error : ''}`);
 // ── 3. cluster into unique events (per country) ──────────────────────────────
 const STOP = new Set('los las del que con por para una uno sus más como este esta tras sobre entre desde les des une pour dans par sur avec aux est sont plus cette après contre dos das uma mais após der die das und mit von für auf den dem ein eine nach über bei zum zur ist sind the and for with from that this have has will after over into about than their they were been are was its not but who how what when where why says said say new more news amid as of in on at to by is it be an a or up out off could would may after before during against'.split(' '));
 const toks = t => new Set(t.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w)));
