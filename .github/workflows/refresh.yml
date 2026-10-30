@@ -1,0 +1,37 @@
+name: Refresh and deploy
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # every 3 hours
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: upstream-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SITE_URL: https://upstream.thanh-tran-794.workers.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build fresh data (continues from the deployed history)
+        run: node pipeline/run.mjs
+        env:
+          HISTORY_URL: ${{ env.SITE_URL }}/data/history.json
+      - name: Deploy to Cloudflare
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: npx wrangler deploy
+      - name: Skip note
+        if: ${{ env.CLOUDFLARE_API_TOKEN == '' }}
+        run: echo "CLOUDFLARE_API_TOKEN secret not set; data built but not deployed."

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upstream · Global situation brief</title>
+<meta name="description" content="A 90-second brief on the countries you serve and pray for, with urgency updates built from public news feeds.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f3a5f'/%3E%3Cpath d='M8 22l6-12 4 8 3-5 3 9' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#brief"><span class="logo" aria-hidden="true"></span>Upstream</a>
+    <nav aria-label="Sections">
+      <a href="#brief" data-tab="brief">Brief</a>
+      <a href="#prayer" data-tab="prayer">My prayer space</a>
+      <a href="#about" data-tab="about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner" class="banner" hidden></div>
+
+  <section id="tab-brief" class="tab">
+    <div class="hero">
+      <p class="eyebrow" id="dateline">Loading…</p>
+      <h1 id="heroLine">Reading the world for you…</h1>
+    </div>
+
+    <div class="sechead">
+      <h2>Your countries</h2>
+      <span class="sub" id="watchMode"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="cards" id="watch"></div>
+
+    <div class="sechead">
+      <h2>Urgent in the last 72 hours</h2>
+      <span class="sub" id="urgentCount"></span>
+    </div>
+    <div class="list" id="urgentMine"></div>
+    <details class="more" id="urgentOtherWrap">
+      <summary id="urgentOtherLabel">Elsewhere in the world</summary>
+      <div class="list" id="urgentOther"></div>
+    </details>
+
+    <div class="sechead explore">
+      <h2>Explore other countries</h2>
+      <span class="sub">Everywhere with recent reporting, most urgent first</span>
+    </div>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Search a country…" aria-label="Search a country">
+      <select id="region" aria-label="Filter by region"><option value="">All regions</option></select>
+    </div>
+    <div class="table" id="explore"></div>
+  </section>
+
+  <section id="tab-prayer" class="tab" hidden>
+    <div class="hero">
+      <p class="eyebrow">My prayer space</p>
+      <h1>Pray for the nations, today.</h1>
+      <p class="lede">Add countries and headlines you want to pray for. Countries you follow update automatically each time the brief refreshes. Everything is saved on this device only.</p>
+    </div>
+
+    <div class="sechead"><h2>Add to my prayer space</h2></div>
+    <div class="adder">
+      <div class="row">
+        <input type="search" id="pcAdd" list="countryList" placeholder="Add a country…" aria-label="Add a country to pray for" autocomplete="off">
+        <button class="btn" id="pcBtn" type="button">Add country</button>
+      </div>
+      <div class="row">
+        <input type="text" id="phText" placeholder="Or write a headline or request to pray for…" aria-label="Headline or prayer request" maxlength="240">
+        <input type="url" id="phUrl" placeholder="Link (optional)" aria-label="Link, optional">
+        <button class="btn" id="phBtn" type="button">Add request</button>
+      </div>
+      <datalist id="countryList"></datalist>
+    </div>
+
+    <div class="sechead"><h2>Countries I pray for</h2><span class="sub" id="pcSub"></span></div>
+    <div class="cards" id="pcards"></div>
+
+    <div class="sechead"><h2>Headlines and requests</h2><span class="sub" id="phSub"></span></div>
+    <div class="list" id="pheads"></div>
+  </section>
+
+  <section id="tab-about" class="tab" hidden>
+    <div class="hero">
+      <p class="eyebrow">About this demo</p>
+      <h1>How Upstream reads the world</h1>
+    </div>
+    <div class="prose" id="aboutBody"></div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>Upstream is a demo for ministry staff, built from public news and humanitarian feeds. Headlines and links belong to their publishers; this page links out and does not reproduce articles. Nothing here is verified by a person. <a id="fb" href="https://github.com/thanizmy/upstream/issues/new?title=Feedback%3A%20&labels=feedback" target="_blank" rel="noopener">Send feedback</a></p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+[
+ {
+  "name": "ABC Australia World",
+  "url": "https://www.abc.net.au/news/feed/2942460/rss.xml",
+  "n": 25
+ },
+ {
+  "name": "ABC US World",
+  "url": "https://abcnews.go.com/abcnews/internationalheadlines",
+  "n": 25
+ },
+ {
+  "name": "Africanews",
+  "url": "https://www.africanews.com/feed/rss",
+  "n": 50
+ },
+ {
+  "name": "Al Jazeera",
+  "url": "https://www.aljazeera.com/xml/rss/all.xml",
+  "n": 25
+ },
+ {
+  "name": "Al-Monitor",
+  "url": "https://www.al-monitor.com/rss",
+  "n": 20
+ },
+ {
+  "name": "Arab News",
+  "url": "https://www.arabnews.com/rss.xml",
+  "n": 50
+ },
+ {
+  "name": "BBC Africa",
+  "url": "https://feeds.bbci.co.uk/news/world/africa/rss.xml",
+  "n": 36
+ },
+ {
+  "name": "BBC Asia",
+  "url": "https://feeds.bbci.co.uk/news/world/asia/rss.xml",
+  "n": 17
+ },
+ {
+  "name": "BBC Europe",
+  "url": "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
+  "n": 21
+ },
+ {
+  "name": "BBC Latin America",
+  "url": "https://feeds.bbci.co.uk/news/world/latin_america/rss.xml",
+  "n": 17
+ },
+ {
+  "name": "BBC Middle East",
+  "url": "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml",
+  "n": 23
+ },
+ {
+  "name": "BBC World",
+  "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+  "n": 28
+ },
+ {
+  "name": "Catholic News Agency",
+  "url": "https://www.catholicnewsagency.com/rss/news.xml",
+  "n": 50
+ },
+ {
+  "name": "CBS World",
+  "url": "https://www.cbsnews.com/latest/rss/world",
+  "n": 30
+ },
+ {
+  "name": "Christian Post",
+  "url": "https://www.christianpost.com/rss",
+  "n": 30
+ },
+ {
+  "name": "Christianity Today",
+  "url": "https://www.christianitytoday.com/feed/",
+  "n": 10
+ },
+ {
+  "name": "CNA",
+  "url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511",
+  "n": 20
+ },
+ {
+  "name": "Colombia One",
+  "url": "https://colombiaone.com/feed/",
+  "n": 10
+ },
+ {
+  "name": "Crisis Group",
+  "url": "https://www.crisisgroup.org/rss.xml",
+  "n": 10
+ },
+ {
+  "name": "Crux",
+  "url": "https://cruxnow.com/feed",
+  "n": 10
+ },
+ {
+  "name": "CSW",
+  "url": "https://www.csw.org.uk/feed",
+  "n": 12
+ },
+ {
+  "name": "Daily Maverick",
+  "url": "https://www.dailymaverick.co.za/dmrss/",
+  "n": 52
+ },
+ {
+  "name": "Daily Nation",
+  "url": "https://nation.africa/kenya/rss.xml",
+  "n": 25
+ },
+ {
+  "name": "Dawn",
+  "url": "https://www.dawn.com/feeds/home",
+  "n": 28
+ },
+ {
+  "name": "DW All",
+  "url": "https://rss.dw.com/rdf/rss-en-all",
+  "n": 122
+ },
+ {
+  "name": "DW World",
+  "url": "https://rss.dw.com/rdf/rss-en-world",
+  "n": 10
+ },
+ {
+  "name": "Ethiopia Insight",
+  "url": "https://www.ethiopia-insight.com/feed/",
+  "n": 9
+ },
+ {
+  "name": "Euronews",
+  "url": "https://www.euronews.com/rss",
+  "n": 50
+ },
+ {
+  "name": "France24",
+  "url": "https://www.france24.com/en/rss",
+  "n": 24
+ },
+ {
+  "name": "France24 Africa",
+  "url": "https://www.france24.com/en/africa/rss",
+  "n": 30
+ },
+ {
+  "name": "France24 Americas",
+  "url": "https://www.france24.com/en/americas/rss",
+  "n": 30
+ },
+ {
+  "name": "France24 Asia Pacific",
+  "url": "https://www.france24.com/en/asia-pacific/rss",
+  "n": 30
+ },
+ {
+  "name": "France24 Middle East",
+  "url": "https://www.france24.com/en/middle-east/rss",
+  "n": 30
+ },
+ {
+  "name": "GDACS",
+  "url": "https://www.gdacs.org/xml/rss.xml",
+  "n": 264
+ },
+ {
+  "name": "Guardian Africa",
+  "url": "https://www.theguardian.com/world/africa/rss",
+  "n": 20
+ },
+ {
+  "name": "Guardian Americas",
+  "url": "https://www.theguardian.com/world/americas/rss",
+  "n": 20
+ },
+ {
+  "name": "Guardian Asia Pacific",
+  "url": "https://www.theguardian.com/world/asia-pacific/rss",
+  "n": 20
+ },
+ {
+  "name": "Guardian Global development",
+  "url": "https://www.theguardian.com/global-development/rss",
+  "n": 45
+ },
+ {
+  "name": "Guardian Middle East",
+  "url": "https://www.theguardian.com/world/middleeast/rss",
+  "n": 20
+ },
+ {
+  "name": "Guardian World",
+  "url": "https://www.theguardian.com/world/rss",
+  "n": 45
+ },
+ {
+  "name": "Havana Times",
+  "url": "https://havanatimes.org/feed/",
+  "n": 7
+ },
+ {
+  "name": "ICC Persecution",
+  "url": "https://www.persecution.org/feed/",
+  "n": 10
+ },
+ {
+  "name": "Irrawaddy",
+  "url": "https://www.irrawaddy.com/feed",
+  "n": 10
+ },
+ {
+  "name": "Japan Times",
+  "url": "https://www.japantimes.co.jp/feed/",
+  "n": 30
+ },
+ {
+  "name": "Jerusalem Post",
+  "url": "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",
+  "n": 26
+ },
+ {
+  "name": "Kyiv Independent",
+  "url": "https://kyivindependent.com/news-archive/rss/",
+  "n": 15
+ },
+ {
+  "name": "Le Monde English",
+  "url": "https://www.lemonde.fr/en/rss/une.xml",
+  "n": 14
+ },
+ {
+  "name": "MercoPress",
+  "url": "https://en.mercopress.com/rss",
+  "n": 10
+ },
+ {
+  "name": "Mexico News Daily",
+  "url": "https://mexiconewsdaily.com/feed/",
+  "n": 10
+ },
+ {
+  "name": "Middle East Eye",
+  "url": "https://www.middleeasteye.net/rss",
+  "n": 20
+ },
+ {
+  "name": "Mongabay",
+  "url": "https://news.mongabay.com/feed/",
+  "n": 32
+ },
+ {
+  "name": "Morning Star News",
+  "url": "https://morningstarnews.org/feed/",
+  "n": 10
+ },
+ {
+  "name": "MSF",
+  "url": "https://www.msf.org/rss/all",
+  "n": 10
+ },
+ {
+  "name": "NPR World",
+  "url": "https://feeds.npr.org/1004/rss.xml",
+  "n": 10
+ },
+ {
+  "name": "NYT Africa",
+  "url": "https://rss.nytimes.com/services/xml/rss/nyt/Africa.xml",
+  "n": 20
+ },
+ {
+  "name": "NYT Americas",
+  "url": "https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml",
+  "n": 42
+ },
+ {
+  "name": "NYT Asia Pacific",
+  "url": "https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml",
+  "n": 20
+ },
+ {
+  "name": "NYT Europe",
+  "url": "https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml",
+  "n": 20
+ },
+ {
+  "name": "NYT Middle East",
+  "url": "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",
+  "n": 46
+ },
+ {
+  "name": "NYT World",
+  "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+  "n": 54
+ },
+ {
+  "name": "Peru Reports",
+  "url": "https://perureports.com/feed/",
+  "n": 15
+ },
+ {
+  "name": "PNG Post-Courier",
+  "url": "https://postcourier.com.pg/feed/",
+  "n": 10
+ },
+ {
+  "name": "Premium Times",
+  "url": "https://www.premiumtimesng.com/feed",
+  "n": 15
+ },
+ {
+  "name": "Punch Nigeria",
+  "url": "https://punchng.com/feed/",
+  "n": 30
+ },
+ {
+  "name": "Radio Free Asia",
+  "url": "https://www.rfa.org/english/rss2.xml",
+  "n": 30
+ },
+ {
+  "name": "Rappler",
+  "url": "https://www.rappler.com/feed/",
+  "n": 10
+ },
+ {
+  "name": "Religion News Service",
+  "url": "https://religionnews.com/feed/",
+  "n": 10
+ },
+ {
+  "name": "Rest of World",
+  "url": "https://restofworld.org/feed/latest",
+  "n": 12
+ },
+ {
+  "name": "RNZ Pacific",
+  "url": "https://www.rnz.co.nz/rss/pacific.xml",
+  "n": 16
+ },
+ {
+  "name": "SCMP",
+  "url": "https://www.scmp.com/rss/91/feed",
+  "n": 50
+ },
+ {
+  "name": "Sky News World",
+  "url": "https://feeds.skynews.com/feeds/rss/world.xml",
+  "n": 8
+ },
+ {
+  "name": "Straits Times World",
+  "url": "https://www.straitstimes.com/news/world/rss.xml",
+  "n": 50
+ },
+ {
+  "name": "Taipei Times",
+  "url": "https://www.taipeitimes.com/xml/index.rss",
+  "n": 50
+ },
+ {
+  "name": "The Diplomat",
+  "url": "https://thediplomat.com/feed/",
+  "n": 96
+ },
+ {
+  "name": "The Hindu International",
+  "url": "https://www.thehindu.com/news/international/feeder/default.rss",
+  "n": 60
+ },
+ {
+  "name": "Times of India World",
+  "url": "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",
+  "n": 20
+ },
+ {
+  "name": "Times of Israel",
+  "url": "https://www.timesofisrael.com/feed/",
+  "n": 15
+ },
+ {
+  "name": "UN News",
+  "url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+  "n": 30
+ },
+ {
+  "name": "UN News Africa",
+  "url": "https://news.un.org/feed/subscribe/en/news/region/africa/feed/rss.xml",
+  "n": 30
+ },
+ {
+  "name": "UN News Americas",
+  "url": "https://news.un.org/feed/subscribe/en/news/region/americas/feed/rss.xml",
+  "n": 30
+ },
+ {
+  "name": "UN News Asia Pacific",
+  "url": "https://news.un.org/feed/subscribe/en/news/region/asia-pacific/feed/rss.xml",
+  "n": 30
+ },
+ {
+  "name": "UN News Europe",
+  "url": "https://news.un.org/feed/subscribe/en/news/region/europe/feed/rss.xml",
+  "n": 30
+ },
+ {
+  "name": "UN News Middle East",
+  "url": "https://news.un.org/feed/subscribe/en/news/region/middle-east/feed/rss.xml",
+  "n": 30
+ },
+ {
+  "name": "USGS significant quakes",
+  "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.atom",
+  "n": 4
+ },
+ {
+  "name": "Vatican News",
+  "url": "https://www.vaticannews.va/en.rss.xml",
+  "n": 50
+ },
+ {
+  "name": "WHO news",
+  "url": "https://www.who.int/rss-feeds/news-english.xml",
+  "n": 109
+ }
+]
