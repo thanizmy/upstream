@@ -290,7 +290,7 @@
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
       $('uhSub').textContent = urgent.length + ' serious events in the data we hold';
       $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><button class="linkbtn" data-pin="' + esc(e.id) + '" data-cc="' + cc + '" data-ph="1" type="button">+ Pray</button></div>';
+        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(safeUrl(e.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.h) + '</span><span class="m">' + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span></a><span></span></div>';
       }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
@@ -327,7 +327,7 @@
       var u = safeUrl(h.u || '');
       return '<div class="urow"><span>' + (h.s ? pips(h.s) : '') + '</span><div class="ev"><span class="h">' + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(h.t) + '</a>' : esc(h.t)) + '</span>' +
         '<span class="m">' + (h.fl ? h.fl + ' ' + esc(h.c) + ' · ' : '') + 'saved ' + ago(h.added) + '</span></div><button class="linkbtn" data-rmh="' + i + '" type="button">Remove</button></div>';
-    }).join('') || '<div class="empty">Nothing saved. Use “+ Pray” beside any headline, or write your own request above.</div>';
+    }).join('') || '<div class="empty">Nothing saved. Write your own request above, or add a country to follow its updates.</div>';
   }
 
   /* ── about ─────────────────────────────────────────── */
