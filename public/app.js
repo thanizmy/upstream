@@ -21,7 +21,7 @@
     var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
     return '<span class="pips" style="--k:' + kc(n) + '" title="severity ' + n + ' of 5">' + h + '</span>';
   }
-  function bandChip(n) { return '<span class="band" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
+  function bandChip(n) { return '<span class="band" data-b="' + n + '" style="--k:' + kc(n) + '">' + BAND[n] + '</span>'; }
   function fmtDate(iso) { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
 
   /* ── state ─────────────────────────────────────────── */
@@ -62,7 +62,7 @@
   function countryCard(c, o) {
     o = o || {};
     var done = pray().done[c.cc] === today();
-    return '<article class="card"><h3><span class="fl">' + c.fl + '</span>' + esc(c.k) + bandChip(c.band) + '</h3>' +
+    return '<article class="card" style="--k:' + kc(c.band) + '"><h3><span class="fl">' + c.fl + '</span>' + esc(c.k) + bandChip(c.band) + '</h3>' +
       '<p class="stats"><b>' + c.events7 + '</b> events · ' + c.reports7 + ' reports this week · ' + trendHtml(c) + '</p>' +
       spark(c) +
       '<div class="prayer">' + esc(c.prayer.text) + '</div>' +
