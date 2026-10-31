@@ -43,7 +43,7 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .topc .k{margin:0 0 10px;font:11px/1.6 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .mapwrap{border:1px solid var(--rule);background:var(--panel);overflow:hidden}
 .mapscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.mapbox{min-width:640px}
+.mapbox{min-width:640px;position:relative}
 .mapsvg{display:block;width:100%;height:auto}
 .gridline{stroke:var(--hair);stroke-width:.7}
 .land{fill:var(--sink);stroke:var(--panel);stroke-width:.5}
@@ -196,3 +196,13 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .ot{display:block;margin-top:4px;font:italic 12.5px/1.4 "Libre Franklin",system-ui,sans-serif;color:var(--muted);letter-spacing:0;text-transform:none}
 
 .moved .mv .fl{color:var(--navy); font-weight: bold}
+
+.land,.dot{vector-effect:non-scaling-stroke}
+.mapsvg.zoomed{cursor:grab;touch-action:none}
+.mapsvg.panning,.mapsvg.panning .land,.mapsvg.panning .dot{cursor:grabbing}
+.mapctl{display:flex;align-items:center;border:1px solid var(--rule);background:var(--panel);margin-bottom:18px}
+.mapctl button{min-width:44px;min-height:44px;border:0;background:none;color:var(--navy);font:500 20px/1 "IBM Plex Mono",monospace;cursor:pointer}
+.mapctl button.rs{font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-left:1px solid var(--rule);padding:0 12px}
+.mapctl button:hover:not(:disabled){background:var(--sink)}
+.mapctl button:disabled{color:var(--muted);opacity:.45;cursor:default}
+.mapctl .mapk{flex:1;min-width:48px;text-align:center;font:500 11px "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--ink2);border-left:1px solid var(--rule);border-right:1px solid var(--rule);align-self:stretch;display:flex;align-items:center;justify-content:center}

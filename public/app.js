@@ -6,6 +6,7 @@
   var WK = 'upstream.watch.v2', PK = 'upstream.pray.v1', VK = 'upstream.view.v1';
   var user = null;
   var D, byCc = {}, view = 'w7', world = null, profileCache = {};
+  var mapV = { k: 1, x: 0, y: 0 }, MAXK = 8, mapDragged = false; // map zoom: scale and top-left of the visible area
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -252,7 +253,57 @@
     $('map').innerHTML = ''; $('map').appendChild(svg);
     svg.addEventListener('mousemove', function (e) { var t = e.target.closest('[data-cc]'); if (t && byCc[t.dataset.cc]) showTip(e, tipFor(byCc[t.dataset.cc])); else hideTip(); });
     svg.addEventListener('mouseleave', hideTip);
-    svg.addEventListener('click', function (e) { var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; });
+    // zoom: scale the SVG viewBox. +/- buttons, Ctrl/Cmd + wheel, keys + - 0, and drag to pan once zoomed in
+    var ctl = $('mapctl');
+    ctl.innerHTML = '<button type="button" data-z="out" aria-label="Zoom out" title="Zoom out">&minus;</button><span class="mapk" aria-live="polite">100%</span><button type="button" data-z="in" aria-label="Zoom in" title="Zoom in">+</button><button type="button" data-z="reset" class="rs" title="Reset the map">Reset</button>';
+    var kEl = ctl.querySelector('.mapk');
+    function clampView() {
+      var vw = world.w / mapV.k, vh = world.h / mapV.k;
+      mapV.x = Math.min(Math.max(mapV.x, 0), world.w - vw); mapV.y = Math.min(Math.max(mapV.y, 0), world.h - vh);
+    }
+    function paintView() {
+      clampView();
+      svg.setAttribute('viewBox', mapV.x.toFixed(1) + ' ' + mapV.y.toFixed(1) + ' ' + (world.w / mapV.k).toFixed(1) + ' ' + (world.h / mapV.k).toFixed(1));
+      svg.classList.toggle('zoomed', mapV.k > 1);
+      kEl.textContent = Math.round(mapV.k * 100) + '%';
+      ctl.querySelector('[data-z=in]').disabled = mapV.k >= MAXK; ctl.querySelector('[data-z=out]').disabled = mapV.k <= 1; ctl.querySelector('[data-z=reset]').disabled = mapV.k === 1;
+    }
+    // zoom by a factor, keeping the map point under (fx, fy) (fractions of the visible area) in place
+    function zoomBy(f, fx, fy) {
+      var k = Math.min(MAXK, Math.max(1, mapV.k * f)); if (k === mapV.k) return;
+      var vw = world.w / mapV.k, vh = world.h / mapV.k, px = mapV.x + fx * vw, py = mapV.y + fy * vh;
+      mapV.k = k; mapV.x = px - fx * world.w / k; mapV.y = py - fy * world.h / k; paintView();
+    }
+    ctl.onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.z === 'in') zoomBy(1.5, .5, .5); else if (b.dataset.z === 'out') zoomBy(1 / 1.5, .5, .5);
+      else { mapV = { k: 1, x: 0, y: 0 }; paintView(); }
+    };
+    svg.addEventListener('wheel', function (e) {
+      if (!(e.ctrlKey || e.metaKey)) return; // plain scrolling still scrolls the page
+      e.preventDefault(); var r = svg.getBoundingClientRect();
+      zoomBy(e.deltaY < 0 ? 1.2 : 1 / 1.2, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+    }, { passive: false });
+    svg.addEventListener('keydown', function (e) {
+      if (e.key === '+' || e.key === '=') zoomBy(1.5, .5, .5); else if (e.key === '-') zoomBy(1 / 1.5, .5, .5); else if (e.key === '0') { mapV = { k: 1, x: 0, y: 0 }; paintView(); }
+    });
+    svg.addEventListener('pointerdown', function (e) {
+      if (mapV.k <= 1 || e.button > 0) return;
+      var sx = e.clientX, sy = e.clientY, ox = mapV.x, oy = mapV.y, r = svg.getBoundingClientRect(), moved = false;
+      function mv(ev) {
+        var dx = ev.clientX - sx, dy = ev.clientY - sy;
+        if (!moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+        moved = true; svg.classList.add('panning'); hideTip();
+        mapV.x = ox - dx * (world.w / mapV.k) / r.width; mapV.y = oy - dy * (world.h / mapV.k) / r.height; paintView();
+      }
+      function up() {
+        document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up);
+        svg.classList.remove('panning'); if (moved) { mapDragged = true; setTimeout(function () { mapDragged = false; }, 0); }
+      }
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+    });
+    paintView();
+    svg.addEventListener('click', function (e) { if (mapDragged) return; var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; });
     svg.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; } });
     var placed = D.countries.filter(function (c) { return W(c).ev; }).length;
     $('mapStat').textContent = placed + ' countries with reports · ' + winLabel();
