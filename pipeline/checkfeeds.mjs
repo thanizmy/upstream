@@ -6,6 +6,7 @@
 // Usage: node pipeline/checkfeeds.mjs                      re-validates every list below
 //        node pipeline/checkfeeds.mjs <candidates> <out>   one list
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 const MAX_AGE_DAYS = 45, MIN_ITEMS = 3;
 const p = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
@@ -17,7 +18,7 @@ const linkOf = e => {
 };
 
 /** Returns {n, newestAgeDays} or throws with the reason the feed is rejected. */
-async function validate(url) {
+export async function validate(url) {
   const r = await fetch(url, {
     headers: { 'user-agent': 'Mozilla/5.0 UpstreamBot/1.0', accept: 'application/rss+xml,application/atom+xml,application/xml,text/xml,*/*' },
     signal: AbortSignal.timeout(20000), redirect: 'follow'
@@ -42,7 +43,7 @@ async function validate(url) {
 async function run(candFile, outFile) {
   const list = JSON.parse(fs.readFileSync(new URL('./' + candFile, import.meta.url)));
   const ok = [], bad = [], q = list.map(x => Array.isArray(x) ? x : [x.name, x.url, x.lang, x.cc]);
-  await Promise.all(Array.from({ length: 12 }, async () => {
+  await Promise.all(Array.from({ length: 32 }, async () => {
     while (q.length) {
       const [name, url, lang, cc] = q.shift();
       try { const v = await validate(url); ok.push({ name, url, n: v.n, ...(lang ? { lang } : {}), ...(cc ? { cc } : {}) }); }
@@ -54,7 +55,7 @@ async function run(candFile, outFile) {
   if (process.env.VERBOSE || process.argv[2]) console.log(bad.sort().join('\n'));
 }
 
-{
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv[2]) await run(process.argv[2], process.argv[3] || 'feeds.json');
-  else for (const [c, o] of [['feeds.candidates.json', 'feeds.json'], ['feeds.en2.candidates.json', 'feeds.en2.json'], ['feeds.local.candidates.json', 'feeds.local.json'], ['feeds.local2.candidates.json', 'feeds.local2.json']]) await run(c, o);
+  else for (const [c, o] of [['feeds.candidates.json', 'feeds.json'], ['feeds.en2.candidates.json', 'feeds.en2.json'], ['feeds.local.candidates.json', 'feeds.local.json'], ['feeds.local2.candidates.json', 'feeds.local2.json'], ['feeds.discovered.json', 'feeds.discovered.json']]) await run(c, o);
 }
