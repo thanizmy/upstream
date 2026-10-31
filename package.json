@@ -13,5 +13,8 @@
     "fast-xml-parser": "^5.11.2",
     "world-countries": "^5.1.0"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^4.156.0"
+  }
 }

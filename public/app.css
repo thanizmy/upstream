@@ -185,3 +185,38 @@ footer.wrap p{max-width:1200px;margin:0 auto}
 @media (prefers-reduced-motion:reduce){
   *,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
+
+/* ── accounts ── */
+body.anon .authonly{display:none!important}
+.auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--panel);display:inline-flex;align-items:center;justify-content:center;font:600 15px "IBM Plex Mono",monospace;flex:none}
+.who{font-size:13px;color:var(--ink2)}
+.who b{color:var(--navy);font-weight:700}
+.authdlg{border:0;border-top:3px solid var(--navy);background:var(--panel);color:var(--ink);padding:0;width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 24px 60px -20px rgba(3,1,67,.45)}
+.authdlg::backdrop{background:rgba(3,1,67,.5)}
+.authdlg form{display:flex;flex-direction:column}
+.ahead{display:flex;align-items:center;justify-content:space-between;padding:14px 8px 0 26px}
+.ahead .fcmark{width:30px;height:30px}
+.authdlg .x{border:0;background:none;font:400 28px/1 system-ui,sans-serif;color:var(--ink2);cursor:pointer;width:44px;height:44px}
+.authdlg .x:hover{color:var(--navy)}
+.abody{padding:6px 26px 26px;display:flex;flex-direction:column;gap:16px}
+.authdlg h2{font-family:"Gloock",serif;font-weight:400;margin:0;font-size:28px;line-height:1.15;color:var(--navy)}
+.asub{margin:-8px 0 0;font-size:14px;line-height:1.5;color:var(--ink2)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field[hidden]{display:none}
+.authdlg label{font:500 11px "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.authdlg input{display:block;width:100%;box-sizing:border-box;min-height:46px;padding:0 12px;border:1px solid var(--rule);background:var(--raise);color:var(--ink);font:16px "Libre Franklin",system-ui,sans-serif}
+.authdlg input:focus{border-color:var(--navy);box-shadow:0 0 0 3px color-mix(in srgb,var(--navy) 18%,transparent);outline:none}
+.pw{position:relative}
+.pw input{padding-right:64px}
+.pw button{position:absolute;right:0;top:0;height:100%;min-width:60px;border:0;background:none;color:var(--navy);font:500 11px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.rules{list-style:none;margin:2px 0 0;padding:0;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.rules[hidden]{display:none}
+.rules li:before{content:"\25CB";display:inline-block;width:1.4em}
+.rules li.ok{color:var(--navy)}
+.rules li.ok:before{content:"\25CF"}
+.aerr{margin:0;padding:10px 12px;border-left:3px solid var(--s5);background:var(--sink);font-size:14px;color:var(--ink);font-weight:500}
+.authdlg .btn.wide{width:100%;margin:0}
+.authdlg .btn:disabled{opacity:.6;cursor:progress;transform:none;box-shadow:none}
+.afoot{padding:16px 26px;border-top:1px solid var(--rule);background:var(--sink);text-align:center;font-size:14px;color:var(--ink2)}
+.afoot .linkbtn{padding:6px 2px;font-weight:600}

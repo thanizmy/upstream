@@ -19,18 +19,57 @@
     <a class="brand" href="#brief" aria-label="Upstream, by Frontier Commons"><svg class="fcmark" viewBox="0 0 184 183" role="img" aria-label="Frontier Commons"><g fill="currentColor"><rect x="1" y="0" width="72" height="28" style="--i:0"/><rect x="89" y="0" width="94" height="28" style="--i:1"/><rect x="1" y="28" width="28" height="155" style="--i:2"/><rect x="142" y="54" width="42" height="28" style="--i:3"/><rect x="54" y="55" width="72" height="27" style="--i:4"/><rect x="54" y="83" width="28" height="100" style="--i:5"/><rect x="109" y="107" width="75" height="27" style="--i:6"/><rect x="109" y="134" width="26" height="49" style="--i:7"/></g></svg><span class="wm"><b>Upstream</b><i>Frontier Commons</i></span></a>
     <nav aria-label="Sections">
       <a href="#brief" data-tab="brief">Brief</a>
-      <a href="#prayer" data-tab="prayer">My prayer space</a>
+      <a href="#prayer" data-tab="prayer" class="authonly">My prayer space</a>
       <a href="#about" data-tab="about">About</a>
     </nav>
+    <div class="auth" id="auth"></div>
   </div>
 </header>
+
+<dialog id="authDlg" class="authdlg" aria-labelledby="authTitle">
+  <form id="authForm" novalidate autocomplete="on">
+    <div class="ahead">
+      <svg class="fcmark" viewBox="0 0 184 183" aria-hidden="true"><g fill="currentColor"><rect x="1" y="0" width="72" height="28"/><rect x="89" y="0" width="94" height="28"/><rect x="1" y="28" width="28" height="155"/><rect x="142" y="54" width="42" height="28"/><rect x="54" y="55" width="72" height="27"/><rect x="54" y="83" width="28" height="100"/><rect x="109" y="107" width="75" height="27"/><rect x="109" y="134" width="26" height="49"/></g></svg>
+      <button type="button" class="x" id="authClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="abody">
+      <h2 id="authTitle">Log in</h2>
+      <p class="asub" id="auSub">Welcome back. Log in to see your countries and prayer space.</p>
+
+      <div class="field">
+        <label for="auUser" id="auUserLbl">Username or email</label>
+        <input id="auUser" name="username" type="text" autocomplete="username" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="field" id="auEmailWrap" hidden>
+        <label for="auEmail">Email</label>
+        <input id="auEmail" name="email" type="email" autocomplete="email" maxlength="254" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="auPass">Password</label>
+        <div class="pw">
+          <input id="auPass" name="password" type="password" autocomplete="current-password" maxlength="20">
+          <button type="button" id="auShow" aria-controls="auPass" aria-pressed="false">Show</button>
+        </div>
+        <ul class="rules" id="auRules" hidden>
+          <li data-r="len">8 to 20 characters</li>
+          <li data-r="num">At least 1 number</li>
+          <li data-r="sp">At least 1 special character, such as ! @ # $ %</li>
+        </ul>
+      </div>
+
+      <p class="aerr" id="auErr" role="alert" hidden></p>
+      <button class="btn wide" type="submit" id="auGo">Log in</button>
+    </div>
+    <div class="afoot"><span id="auSwitchTxt">New to Upstream?</span> <button type="button" class="linkbtn" id="auSwitch" data-authmode="signup">Create an account</button></div>
+  </form>
+</dialog>
 
 <main class="wrap">
   <div id="banner" class="banner" hidden></div>
 
   <!-- BRIEF -->
   <section id="tab-brief" class="tab">
-    <nav class="secnav" id="secnav" aria-label="Brief sections"><div class="secin"><button type="button" data-sec="sec-watch">Your countries</button><button type="button" data-sec="sec-world">The world</button><button type="button" data-sec="sec-urgent">Urgent</button><button type="button" data-sec="sec-moved">What moved</button><button type="button" data-sec="sec-stories">Top stories</button><button type="button" data-sec="sec-need">Where need is greatest</button><button type="button" data-sec="sec-gaps">Blind spots</button><button type="button" data-sec="sec-method">How it is built</button></div></nav>
+    <nav class="secnav" id="secnav" aria-label="Brief sections"><div class="secin"><button type="button" data-sec="sec-watch" class="authonly">Your countries</button><button type="button" data-sec="sec-world">The world</button><button type="button" data-sec="sec-urgent">Urgent</button><button type="button" data-sec="sec-moved">What moved</button><button type="button" data-sec="sec-stories">Top stories</button><button type="button" data-sec="sec-need">Where need is greatest</button><button type="button" data-sec="sec-gaps">Blind spots</button><button type="button" data-sec="sec-method">How it is built</button></div></nav>
     <div class="hero">
       <p class="eyebrow" id="dateline">Loading…</p>
       <h1 id="heroLine">Reading the world for you…</h1>
@@ -42,11 +81,11 @@
         <span class="sub" id="viewNote"></span>
       </div>
     </div>
-    <div class="kpis" id="watchKpis"></div>
+    <div class="kpis authonly" id="watchKpis"></div>
 
-    <div class="sechead" id="sec-watch"><h2>Your <i>countries</i></h2><span class="sub" id="watchMode"></span></div>
-    <div class="chips" id="chips"></div>
-    <div class="crows" id="watch"></div>
+    <div class="sechead authonly" id="sec-watch"><h2>Your <i>countries</i></h2><span class="sub" id="watchMode"></span></div>
+    <div class="chips authonly" id="chips"></div>
+    <div class="crows authonly" id="watch"></div>
 
     <div class="sechead" id="sec-world"><h2>The world <i>right now</i></h2><span class="sub" id="worldSub"></span></div>
     <p class="lede" id="worldLine"></p>

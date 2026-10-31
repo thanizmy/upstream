@@ -4,6 +4,7 @@
   var BAND = ['', 'Quiet', 'Routine', 'Elevated', 'High', 'Critical'];
   var TH = { conflict: 'Conflict', disaster: 'Disaster', health: 'Health', persecution: 'Persecution', hunger: 'Hunger', displacement: 'Displacement', unrest: 'Unrest', politics: 'Politics', other: 'Other' };
   var WK = 'upstream.watch.v2', PK = 'upstream.pray.v1', VK = 'upstream.view.v1';
+  var user = null;
   var D, byCc = {}, view = 'w7', world = null, profileCache = {};
 
   function $(id) { return document.getElementById(id); }
@@ -146,7 +147,9 @@
     var wUp = wl.filter(function (c) { var t = W(c).chg; return t && t.dir === 'up'; }).length;
     var wEv = wl.reduce(function (n, c) { return n + W(c).ev; }, 0), wRep = wl.reduce(function (n, c) { return n + W(c).rep; }, 0);
     var lead = wl.slice().sort(function (x, y) { return W(x).rank - W(y).rank; })[0];
-    $('heroLine').innerHTML = wl.length
+    if (!user) {
+      $('heroLine').innerHTML = '<b>' + k.hot + '</b> of ' + k.watched + ' countries with reporting are at High or Critical in the ' + winLabel() + '. <a class="num" href="#sec-urgent" data-goto="sec-urgent" title="See these events"><b>' + k.urgent + '</b></a> confirmed serious events ' + (isW ? 'in the last 72 hours' : 'this month') + '. <a class="num" href="#" data-auth="signup">Sign up</a> to follow the countries you serve.';
+    } else $('heroLine').innerHTML = wl.length
       ? '<b>' + wHot.length + '</b> of your <b>' + wl.length + '</b> countries ' + (wHot.length === 1 ? 'is' : 'are') + ' at High or Critical in the ' + winLabel() + '. <a class="num" href="#sec-urgent" data-goto="sec-urgent" title="See these events"><b>' + wUrgent + '</b></a> confirmed serious event' + (wUrgent === 1 ? '' : 's') + ' ' + (isW ? 'in the last 72 hours' : 'this month') + (lead ? '. Most urgent: <a class="num" href="#c/' + lead.cc + '" title="Open the ' + esc(lead.k) + ' report">' + esc(lead.k) + '</a>.' : '.')
       : 'Add the countries you serve to see your brief here.';
     $('watchKpis').innerHTML = [
@@ -175,6 +178,13 @@
   }
   function renderUrgent() {
     var w = watchList(), set = {}; w.list.forEach(function (c) { set[c] = 1; });
+    if (!user) {
+      var all = D.urgent[view];
+      $('urgentCount').textContent = (view === 'w7' ? 'last 72 hours · ' : 'last 30 days · ') + all.length + ' worldwide';
+      $('urgentMine').innerHTML = all.length ? all.map(urgentRow).join('') : '<div class="empty">Nothing at severity 4 or above, confirmed by two sources, in this window.</div>';
+      $('urgentOtherWrap').hidden = true;
+      return;
+    }
     var U = D.urgent[view], mine = U.filter(function (u) { return set[u.cc]; }), other = U.filter(function (u) { return !set[u.cc]; });
     $('urgentCount').textContent = (view === 'w7' ? 'last 72 hours · ' : 'last 30 days · ') + mine.length + ' in your countries · ' + other.length + ' elsewhere';
     $('urgentMine').innerHTML = mine.length ? mine.map(urgentRow).join('') : '<div class="empty">Nothing at severity 4 or above, confirmed by two sources, in your countries in this window. That is a real reading, not an empty feed.</div>';
@@ -425,6 +435,7 @@
     if (seg) { view = seg.dataset.view; save(VK, view); refreshAll(); return; }
     var b = ev.target.closest('button'); if (!b) return;
     var d = b.dataset, p, w;
+    if (!user && (d.unwatch || d.watch || d.addp || d.rmp || d.done || d.pin || d.rmh !== undefined || b.id === 'wReset')) { openAuth('signup'); return; }
     if (d.unwatch) { w = watchList().list.filter(function (c) { return c !== d.unwatch; }); save(WK, w.length ? w : null); refreshAll(); }
     else if (d.watch) { w = watchList().list; var i = w.indexOf(d.watch); if (i < 0) w.push(d.watch); else w.splice(i, 1); save(WK, w.length ? w : null); refreshAll(); }
     else if (b.id === 'wReset') { save(WK, null); refreshAll(); }
@@ -463,6 +474,7 @@
   function route() {
     var h = (location.hash || '#brief').slice(1), t = 'brief', m = h.match(/^c\/([A-Za-z]{2})$/);
     if (m) t = 'country'; else if (['brief', 'prayer', 'about'].indexOf(h) >= 0) t = h;
+    if (t === 'prayer' && !user) { location.hash = '#brief'; return; }
     ['brief', 'country', 'prayer', 'about'].forEach(function (k) { $('tab-' + k).hidden = k !== t; });
     document.querySelectorAll('nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.tab === t); });
     if (t === 'prayer') renderPrayer();
@@ -549,6 +561,100 @@
   }
   secBar();
 
+  /* ── accounts ──────────────────────────────────────────
+     Sign up, log in and the session cookie are handled by the Worker in worker/index.js (/api/*). */
+  var PW_MIN = 8, PW_MAX = 20, authMode = 'login', authBusy = false;
+  function pwRules(pw) { return { len: pw.length >= PW_MIN && pw.length <= PW_MAX, num: /\d/.test(pw), sp: /[^A-Za-z0-9\s]/.test(pw) }; }
+  function setUser(u) {
+    user = u;
+    var sfx = u ? '.' + u.id : '';
+    WK = 'upstream.watch.v2' + sfx; PK = 'upstream.pray.v1' + sfx;
+    document.body.classList.toggle('anon', !u);
+    renderAuth();
+  }
+  function renderAuth() {
+    $('auth').innerHTML = user
+      ? '<span class="avatar" aria-hidden="true">' + esc(user.name.charAt(0).toUpperCase()) + '</span><span class="who">Logged in as <b>' + esc(user.name) + '</b></span><button type="button" class="linkbtn" id="logout">Log out</button>'
+      : '<button type="button" class="btn ghost" data-auth="login">Log in / Sign up</button>';
+  }
+  function setMode(m) {
+    authMode = m;
+    var su = m === 'signup';
+    $('authTitle').textContent = su ? 'Create your account' : 'Log in';
+    $('auSub').textContent = su ? 'Follow the countries you serve and keep your own prayer space.' : 'Welcome back. Log in to see your countries and prayer space.';
+    $('auGo').textContent = su ? 'Create account' : 'Log in';
+    $('auRules').hidden = !su; $('auEmailWrap').hidden = !su;
+    $('auSwitchTxt').textContent = su ? 'Already have an account?' : 'New to Upstream?';
+    $('auSwitch').textContent = su ? 'Log in' : 'Create an account';
+    $('auSwitch').dataset.authmode = su ? 'login' : 'signup';
+    $('auUserLbl').textContent = su ? 'Username' : 'Username or email';
+    if (su) $('auUser').maxLength = 20; else $('auUser').removeAttribute('maxlength');
+    $('auPass').autocomplete = su ? 'new-password' : 'current-password';
+    authErr(''); checkRules();
+  }
+  function authErr(t) { var e = $('auErr'); e.textContent = t; e.hidden = !t; }
+  function checkRules() {
+    var r = pwRules($('auPass').value);
+    document.querySelectorAll('#auRules li').forEach(function (li) { li.classList.toggle('ok', !!r[li.dataset.r]); });
+  }
+  function openAuth(m) {
+    var dlg = $('authDlg'); $('authForm').reset(); $('auPass').type = 'password'; $('auShow').textContent = 'Show'; setMode(m || 'login');
+    if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); }
+    $('auUser').focus();
+  }
+  function closeAuth() { var dlg = $('authDlg'); if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
+  function signedIn(u) {
+    setUser({ id: u.id, name: u.name });
+    closeAuth(); refreshAll();
+    if (location.hash === '#prayer') route();
+  }
+  function api(path, body) {
+    return fetch('/api/' + path, {
+      method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin',
+      headers: body === undefined ? {} : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, body: j }; }); });
+  }
+  function submitAuth(ev) {
+    ev.preventDefault();
+    if (authBusy) return;
+    var name = $('auUser').value.trim(), pw = $('auPass').value, su = authMode === 'signup';
+    var email = $('auEmail').value.trim();
+    if (!name || !pw) { authErr(su ? 'Enter a username and password.' : 'Enter your username or email and password.'); return; }
+    if (su) {
+      if (!/^[A-Za-z0-9_.-]{3,20}$/.test(name)) { authErr('Username: 3 to 20 letters, numbers, dots, dashes or underscores.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 254) { authErr('Enter a valid email address.'); return; }
+      var r = pwRules(pw);
+      if (!r.len) { authErr('Password must be 8 to 20 characters.'); return; }
+      if (!r.num) { authErr('Password needs at least 1 number.'); return; }
+      if (!r.sp) { authErr('Password needs at least 1 special character.'); return; }
+    }
+    authBusy = true; $('auGo').disabled = true; authErr('');
+    api(su ? 'signup' : 'login', su ? { username: name, email: email, password: pw } : { username: name, password: pw }).then(function (r) {
+      authBusy = false; $('auGo').disabled = false;
+      if (r.ok && r.body.user) signedIn(r.body.user);
+      else authErr(r.body.error || 'Could not reach the server. Please try again.');
+    }).catch(function () { authBusy = false; $('auGo').disabled = false; authErr('Could not reach the server. Please try again.'); });
+  }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest('[data-auth]');
+    if (a) { ev.preventDefault(); openAuth(a.dataset.auth); return; }
+    var m = ev.target.closest('[data-authmode]');
+    if (m) { var keep = $('auUser').value; setMode(m.dataset.authmode); $('auUser').value = keep; return; }
+    if (ev.target.id === 'auShow') {
+      var pi = $('auPass'), showing = pi.type === 'text'; pi.type = showing ? 'password' : 'text';
+      ev.target.textContent = showing ? 'Show' : 'Hide'; ev.target.setAttribute('aria-pressed', String(!showing)); return;
+    }
+    if (ev.target.id === 'authClose' || ev.target.id === 'authDlg') { closeAuth(); return; }
+    if (ev.target.id === 'logout') {
+      api('logout', {}).catch(function () {}).then(function () { setUser(null); refreshAll(); route(); });
+    }
+  });
+  $('authForm').addEventListener('submit', submitAuth);
+  $('auPass').addEventListener('input', checkRules);
+  // who is signed in is known before the first render; a missing API (plain static preview) means signed out
+  var authReady = api('me').then(function (r) { setUser(r.ok && r.body.user ? r.body.user : null); }).catch(function () { setUser(null); });
+
   function refreshAll() {
     renderBrief(); renderPrayer();
     if (!$('tab-country').hidden) { var m = location.hash.match(/^#c\/([A-Za-z]{2})$/); if (m) renderProfile(m[1].toUpperCase()); }
@@ -566,7 +672,7 @@
     renderBrief(); renderAbout(); route();
     fetch('world.json').then(function (r) { return r.json(); }).then(function (j) { world = j; renderMap(); }).catch(function () { $('map').innerHTML = '<div class="empty">The map could not be loaded.</div>'; });
   }
-  fetch('data/brief.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(boot).catch(function () {
+  authReady.then(function () { return fetch('data/brief.json', { cache: 'no-cache' }); }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(boot).catch(function () {
     $('heroLine').textContent = 'The brief could not be loaded. Please refresh in a minute.'; $('dateline').textContent = 'Error';
   });
 })();
