@@ -220,3 +220,7 @@ body.anon .authonly{display:none!important}
 .authdlg .btn:disabled{opacity:.6;cursor:progress;transform:none;box-shadow:none}
 .afoot{padding:16px 26px;border-top:1px solid var(--rule);background:var(--sink);text-align:center;font-size:14px;color:var(--ink2)}
 .afoot .linkbtn{padding:6px 2px;font-weight:600}
+
+.eyebrow .srcs{color:var(--navy);font-weight:600;background:color-mix(in srgb,var(--navy) 9%,transparent);padding:2px 8px;white-space:nowrap}
+.capped{border-bottom:1px solid var(--rule)}
+.capnote{margin:8px 0 0;font:11px/1.4 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}

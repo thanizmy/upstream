@@ -140,7 +140,7 @@
   /* ── brief ─────────────────────────────────────────── */
   function renderHero() {
     var k = D.kpi[view], isW = view === 'w7';
-    $('dateline').textContent = 'Situation brief · updated ' + fmtDate(D.generated) + ' · ' + D.feeds.ok + ' of ' + D.feeds.total + ' sources live';
+    $('dateline').innerHTML = 'Situation brief · updated ' + fmtDate(D.generated) + ' · <span class="srcs" title="Feeds that responded on the last refresh">' + fmt(D.feeds.ok) + ' of ' + fmt(D.feeds.total) + ' sources live</span>';
     // top of the page: the brief for the countries this person watches
     var wl = watchList().list.map(function (cc) { return byCc[cc]; }).filter(Boolean);
     var wHot = wl.filter(function (c) { return W(c).band >= 4; }), wset = {}; wl.forEach(function (c) { wset[c.cc] = 1; });
@@ -177,6 +177,17 @@
     $('watch').innerHTML = w.list.map(function (cc) { return countryRow(byCc[cc]); }).join('');
     renderHero();
   }
+  // show the first n rows; the rest scroll inside the box (rows differ in height, so measure)
+  function capRows(el, n) {
+    var old = el.nextElementSibling; if (old && old.classList.contains('capnote')) old.remove();
+    el.style.maxHeight = ''; el.style.overflowY = ''; el.classList.remove('capped');
+    var kids = el.children; if (kids.length <= n || !el.offsetHeight) return;
+    var last = kids[n - 1], nx = kids[n];
+    el.style.maxHeight = (nx.offsetTop - el.offsetTop - 1) + 'px'; el.style.overflowY = 'auto'; el.classList.add('capped');
+    el.tabIndex = 0; el.setAttribute('aria-label', 'Urgent events, scrollable');
+    var note = document.createElement('p'); note.className = 'capnote';
+    note.textContent = 'Showing the top ' + n + ' of ' + kids.length + ' · scroll for the rest'; el.after(note);
+  }
   function renderUrgent() {
     var w = watchList(), set = {}; w.list.forEach(function (c) { set[c] = 1; });
     if (!user) {
@@ -184,6 +195,7 @@
       $('urgentCount').textContent = (view === 'w7' ? 'last 72 hours · ' : 'last 30 days · ') + all.length + ' worldwide';
       $('urgentMine').innerHTML = all.length ? all.map(urgentRow).join('') : '<div class="empty">Nothing at severity 4 or above, confirmed by two sources, in this window.</div>';
       $('urgentOtherWrap').hidden = true;
+      capRows($('urgentMine'), 5);
       return;
     }
     var U = D.urgent[view], mine = U.filter(function (u) { return set[u.cc]; }), other = U.filter(function (u) { return !set[u.cc]; });
@@ -192,7 +204,9 @@
     $('urgentOtherLabel').textContent = 'Elsewhere in the world (' + other.length + ')';
     $('urgentOther').innerHTML = other.map(urgentRow).join('');
     $('urgentOtherWrap').hidden = !other.length;
+    capRows($('urgentMine'), 5); capRows($('urgentOther'), 5);
   }
+  $('urgentOtherWrap').addEventListener('toggle', function () { if (this.open) capRows($('urgentOther'), 5); });
   function renderMoved() {
     var M = D.moved[view];
     $('movedH').innerHTML = 'What <i>moved</i> ' + (view === 'w7' ? 'this week' : 'this month');
