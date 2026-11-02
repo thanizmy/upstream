@@ -82,7 +82,7 @@ hist.items = hist.items.filter(i => i.s >= 2);
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
 // ── 2. fetch ─────────────────────────────────────────────────────────────────
-const feedFiles = fs.readdirSync(new URL('./', import.meta.url)).filter(f => /^feeds.*\.json$/.test(f) && !/candidates/.test(f)).sort(); // every vetted list: feeds.json, feeds.local*.json, feeds.discovered.json ...
+const feedFiles = fs.readdirSync(new URL('./', import.meta.url)).filter(f => /^feeds.*\.json$/.test(f) && !/candidates/.test(f)).sort(); // every vetted list: feeds.world.json and feeds.local.json
 const feeds = feedFiles.flatMap(f => JSON.parse(fs.readFileSync(new URL('./' + f, import.meta.url)))).filter((f, i, a) => (!f.lang || supports(f.lang)) && a.findIndex(g => g.url === f.url) === i); // one entry per URL
 const health = [];
 let inWindow = 0, bad = 0, fresh = 0;

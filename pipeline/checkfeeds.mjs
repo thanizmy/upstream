@@ -3,8 +3,8 @@
 //   2. it carries at least MIN_ITEMS items, each with a title and an http(s) link
 //   3. the NEWEST dated item was published within MAX_AGE_DAYS (not just the first item listed: some feeds sort oldest-first
 //      or pin an old item on top). Items with no date do not count, and dates in the future are ignored.
-// Usage: node pipeline/checkfeeds.mjs                      re-validates every list below
-//        node pipeline/checkfeeds.mjs <candidates> <out>   one list
+// Usage: node pipeline/checkfeeds.mjs                      re-validates feeds.world.json and feeds.local.json in place
+//        node pipeline/checkfeeds.mjs <candidates> [out]   one list (writes back to itself unless out is given)
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
@@ -56,6 +56,6 @@ async function run(candFile, outFile) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.argv[2]) await run(process.argv[2], process.argv[3] || 'feeds.json');
-  else for (const [c, o] of [['feeds.candidates.json', 'feeds.json'], ['feeds.en2.candidates.json', 'feeds.en2.json'], ['feeds.local.candidates.json', 'feeds.local.json'], ['feeds.local2.candidates.json', 'feeds.local2.json'], ['feeds.discovered.json', 'feeds.discovered.json']]) await run(c, o);
+  if (process.argv[2]) await run(process.argv[2], process.argv[3] || process.argv[2]);
+  else for (const f of ['feeds.world.json', 'feeds.local.json']) await run(f, f);
 }

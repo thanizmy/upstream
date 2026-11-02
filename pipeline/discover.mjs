@@ -6,15 +6,15 @@
 //      3+ items with title and link, and have an item from the last 45 days. Nothing enters on a guess.
 //   4. Per-country cap (CAP, default 60), most active feeds first, so no country crowds out the rest.
 // Usage: node pipeline/discover.mjs            (env: CAP, US_SAMPLE, OUT, LIMIT for a quick trial,
-//        MERGE=1 keep what is already in the output and only add new sites, WIKIDATA=1 also list outlets from Wikidata, SKIP_LISTS=1 skip the other lists)
-// Writes pipeline/feeds.discovered.json: [{name, url, n, cc, lang?}]
+//        WIKIDATA=1 also list outlets from Wikidata, SKIP_LISTS=1 skip the other lists)
+// Adds to pipeline/feeds.local.json: [{name, url, n, cc, lang?}] (existing entries are kept)
 import fs from 'node:fs';
 import { COUNTRIES } from './countries.mjs';
 import { supports } from './classify-local.mjs';
 import { validate } from './checkfeeds.mjs';
 
 const CAP = +process.env.CAP || 60, US_SAMPLE = +process.env.US_SAMPLE || 500, CONC = 48;
-const OUT = new URL('./' + (process.env.OUT || 'feeds.discovered.json'), import.meta.url);
+const OUT = new URL('./' + (process.env.OUT || 'feeds.local.json'), import.meta.url);
 const UA = 'Mozilla/5.0 UpstreamBot/1.0 (+https://github.com/thanizmy/upstream)';
 const log = (...a) => console.error(new Date().toISOString().slice(11, 19), ...a);
 // a misbehaving server can make Node's HTTP client throw from inside a socket event; that must not end a long run
@@ -32,10 +32,10 @@ const ccOf = n => { n = (n || '').trim().toLowerCase(); return ALIAS[n] || byNam
 const host = u => { try { return new URL(u).hostname.replace(/^www\./, '').toLowerCase(); } catch { return ''; } };
 const existing = [];
 for (const f of fs.readdirSync(new URL('./', import.meta.url))) {
-  if (/^feeds.*\.json$/.test(f) && !/candidates/.test(f) && f !== 'feeds.discovered.json') existing.push(...JSON.parse(fs.readFileSync(new URL('./' + f, import.meta.url))));
+  if (/^feeds.*\.json$/.test(f) && !/candidates/.test(f) && f !== 'feeds.local.json') existing.push(...JSON.parse(fs.readFileSync(new URL('./' + f, import.meta.url))));
 }
-const prior = process.env.MERGE && fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT)) : [];
-const haveHost = new Set([...existing, ...prior].map(f => host(f.url))), haveName = new Set(existing.map(f => f.name.toLowerCase()));
+const prior = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT)) : [];
+const haveHost = new Set(existing.map(f => host(f.url))), haveName = new Set(existing.map(f => f.name.toLowerCase()));
 const regHost = h => h.split('.').slice(-2).join('.'); // good enough to treat bbc.co.uk / bbc.com apart from other sites
 
 // ── 1. outlet lists ──────────────────────────────────────────────────────────

@@ -186,7 +186,7 @@
     el.style.maxHeight = (nx.offsetTop - el.offsetTop - 1) + 'px'; el.style.overflowY = 'auto'; el.classList.add('capped');
     el.tabIndex = 0; el.setAttribute('aria-label', 'Urgent events, scrollable');
     var note = document.createElement('p'); note.className = 'capnote';
-    note.textContent = 'Showing the top ' + n + ' of ' + kids.length + ' · scroll for the rest'; el.after(note);
+    note.textContent = kids.length + ' events'; el.after(note);
   }
   function renderUrgent() {
     var w = watchList(), set = {}; w.list.forEach(function (c) { set[c] = 1; });
