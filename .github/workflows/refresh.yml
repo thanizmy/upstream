@@ -25,10 +25,21 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build fresh data (continues from the deployed history)
+      - name: Restore saved history
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/history.json
+          key: history-none
+          restore-keys: history-
+      - name: Build fresh data (continues from the saved history)
         run: node pipeline/run.mjs
         env:
           HISTORY_URL: ${{ env.SITE_URL }}/data/history.json
+      - name: Save history
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/history.json
+          key: history-${{ github.run_id }}
       - name: Deploy to Cloudflare
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: npx wrangler deploy

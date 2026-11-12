@@ -10,6 +10,8 @@ import { classifyLocal, supports } from './classify-local.mjs';
 import { translatePending, translationEnabled } from './translate.mjs';
 
 const OUT = process.env.OUT_DIR || 'public/data';
+// history.json grows with every day kept, so it lives outside the deployed assets (Workers allow 25 MiB per asset); the workflow keeps it in the Actions cache
+const HIST_FILE = process.env.HISTORY_FILE || '.cache/history.json';
 const NOW = Date.now();
 const DAY = 864e5;
 const KEEP_DAYS = 70;
@@ -67,8 +69,9 @@ async function fetchFeed(f) {
 // ── 1. history (items from earlier runs) ─────────────────────────────────────
 let hist = { since: dayKey(NOW), items: [] };
 try {
-  if (process.env.HISTORY_URL) {
-    const r = await fetch(process.env.HISTORY_URL, { signal: AbortSignal.timeout(30000) });
+  if (fs.existsSync(HIST_FILE)) hist = JSON.parse(fs.readFileSync(HIST_FILE, 'utf8'));
+  else if (process.env.HISTORY_URL) { // first run without a saved file: continue from the deployed copy, if it is still there
+    const r = await fetch(process.env.HISTORY_URL, { signal: AbortSignal.timeout(60000) });
     if (r.ok) hist = await r.json();
   } else if (fs.existsSync(path.join(OUT, 'history.json'))) hist = JSON.parse(fs.readFileSync(path.join(OUT, 'history.json'), 'utf8'));
 } catch (e) { console.warn('history load failed, starting fresh:', e.message); }
@@ -360,7 +363,9 @@ for (const c of countries) {
   }));
 }
 fs.writeFileSync(path.join(OUT, 'brief.json'), JSON.stringify(brief));
-fs.writeFileSync(path.join(OUT, 'history.json'), JSON.stringify({ since: hist.since, items }));
+fs.mkdirSync(path.dirname(HIST_FILE), { recursive: true });
+fs.writeFileSync(HIST_FILE, JSON.stringify({ since: hist.since, items }));
+fs.rmSync(path.join(OUT, 'history.json'), { force: true }); // never deployed
 fs.writeFileSync(path.join(OUT, 'health.json'), JSON.stringify({ generated: brief.generated, feeds: health }));
 console.log(`countries ${countries.length}, urgent3d ${brief.urgent.w7.length}, urgent30d ${brief.urgent.w30.length}, stories ${brief.stories.w7.length}, top5 ${brief.top5.join(',')}, baseline ${baselineReady}, span ${spanDays}d`);
 console.log('moved up:', moved.w7.up.map(r => r.k + ' ' + (r.pct ?? 'new')).join(', '), '| themes:', moved.w7.themes.map(t => t.th + ' ' + t.pct).join(', '), '| sudden:', moved.w7.sudden.map(e => e.c).join(', '));
