@@ -536,15 +536,38 @@
   $('sort').addEventListener('change', renderNeed);
   $('goNeed').addEventListener('click', function (e) { e.preventDefault(); $('need').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
 
+  /** Labelling queue: real incident or not, for training the headline classifier. */
+  function renderLabels() {
+    var LK = 'upstream.label.v1', lab = load(LK, {}) || {}, q = [];
+    var stat = function () { $('lbStat').textContent = Object.keys(lab).length + ' labelled · ' + q.length + ' in the queue'; };
+    $('lbList').innerHTML = '<div class="empty list">Loading…</div>';
+    fetch('data/label-queue.json').then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (arr) {
+      q = arr.filter(function (x) { return lab[x.h] == null; }); var shown = q.slice(0, 60); stat();
+      $('lbList').innerHTML = shown.map(function (x, i) {
+        return '<div class="urow"><span>' + pips(x.s) + '</span><div><a class="ev" href="' + esc(safeUrl(x.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(x.h) + '</span><span class="m">' + esc(x.f) + (x.mp != null ? ' · classifier: ' + Math.round(x.mp * 100) + '% incident' : '') + '</span></a>' +
+          '<span class="acts"><button type="button" class="btn ghost" data-lb="' + i + '" data-y="1">Real incident</button><button type="button" class="btn ghost" data-lb="' + i + '" data-y="0">Not an incident</button></span></div></div>';
+      }).join('') || '<div class="empty list">Nothing left to label right now. New headlines arrive with each refresh.</div>';
+      $('lbList').onclick = function (e) {
+        var b = e.target.closest('button[data-lb]'); if (!b) return;
+        var x = shown[+b.dataset.lb]; lab[x.h] = +b.dataset.y; save(LK, lab);
+        var row = b.closest('.urow'); row.style.opacity = '.45'; b.parentNode.querySelectorAll('button').forEach(function (z) { z.disabled = true; }); b.classList.add('done'); stat();
+      };
+    });
+    $('lbCopy').onclick = function () {
+      var txt = JSON.stringify(lab, null, 2), done = function () { $('lbMsg').textContent = Object.keys(lab).length + ' labels copied'; };
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Copy this', txt); }); else window.prompt('Copy this', txt);
+    };
+    $('lbClear').onclick = function () { save(LK, {}); renderLabels(); };
+  }
   /** Severity check page: top events with a picker; picks are kept locally and can be copied as overrides.json content. */
   function renderReview() {
     var KEY = 'upstream.review.v1', picks = load(KEY, {}) || {}, seen = {}, list = [];
-    ['w7', 'm30'].forEach(function (v) { ((D.urgent && D.urgent[v]) || []).forEach(function (u) { if (!seen[u.h]) { seen[u.h] = 1; list.push(u); } }); });
+    ['w7', 'w30'].forEach(function (v) { ((D.urgent && D.urgent[v]) || []).forEach(function (u) { if (!seen[u.h]) { seen[u.h] = 1; list.push(u); } }); });
     list.sort(function (a, b) { return b.s - a.s || (b.o || 0) - (a.o || 0); });
     $('revStat').textContent = list.length + ' events · ' + Object.keys(picks).length + ' corrected';
     $('revList').innerHTML = list.map(function (u, i) {
       var cur = picks[u.h] != null ? picks[u.h] : '';
-      return '<div class="urow"><span>' + pips(u.s) + '</span><div><a class="ev" href="' + esc(trUrl(safeUrl(u.u), u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span><span class="m">' + esc(u.c) + ' · ' + esc(TH[u.th] || u.th) + ' · ' + (u.o || 1) + ' outlet' + ((u.o || 1) > 1 ? 's' : '') + '</span></a>' +
+      return '<div class="urow"><span>' + pips(u.s) + '</span><div><a class="ev" href="' + esc(trUrl(safeUrl(u.u), u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span><span class="m">' + esc(u.c) + ' · ' + esc(TH[u.th] || u.th) + ' · ' + (u.o || 1) + ' outlet' + ((u.o || 1) > 1 ? 's' : '') + (u.mp != null ? ' · classifier: ' + Math.round(u.mp * 100) + '% incident' : '') + '</span></a>' +
         '<label class="sub">Should be: <select data-rv="' + i + '"><option value="">Scored correctly (' + u.s + ')</option>' + [1, 2, 3, 4, 5].map(function (n) { return '<option value="' + n + '"' + (String(cur) === String(n) ? ' selected' : '') + '>' + n + (n === 1 ? ' · not an incident' : '') + '</option>'; }).join('') + '</select></label></div></div>';
     }).join('') || '<div class="empty list">No urgent events yet.</div>';
     $('revList').onchange = function (e) {
@@ -557,6 +580,7 @@
       if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Copy this', txt); }); else window.prompt('Copy this', txt);
     };
     $('revClear').onclick = function () { save(KEY, {}); renderReview(); };
+    renderLabels();
   }
   function route() {
     var h = (location.hash || '#brief').slice(1), t = 'brief', m = h.match(/^c\/([A-Za-z]{2})$/);

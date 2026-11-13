@@ -180,6 +180,10 @@
       <p class="lede">These are the most serious events right now. If a headline is scored too high or too low, pick the severity it should have. Your picks stay in this browser; use "Copy corrections" and send them to the person who runs the site, or paste them into pipeline/overrides.json. They then apply on the next refresh, and they also build the labelled examples a future classifier needs.</p>
       <div class="acts"><button type="button" class="btn" id="revCopy">Copy corrections</button><button type="button" class="btn ghost" id="revClear">Clear my picks</button><span class="sub" id="revMsg"></span></div>
       <div id="revList" class="urgent"></div>
+      <div class="sechead" id="lbHead"><h2>Teach the <i>classifier</i></h2><span class="sub" id="lbStat"></span></div>
+      <p class="lede">Is each headline a real incident (something that actually happened to people or places), or not (a figure of speech, a past event, good news, an all-clear)? Each answer becomes a training example for the headline classifier. Aim for 300 to 500. Skip anything you are unsure about. Answers stay in this browser until you copy them.</p>
+      <div class="acts"><button type="button" class="btn" id="lbCopy">Copy labels</button><button type="button" class="btn ghost" id="lbClear">Clear my labels</button><span class="sub" id="lbMsg"></span></div>
+      <div id="lbList" class="urgent"></div>
     </div>
   </section>
   <section id="tab-about" class="tab" hidden>

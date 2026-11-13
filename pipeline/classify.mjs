@@ -85,3 +85,16 @@ export function classify(title, summary = '') {
   if (s === 4 && /\b(strike)\b/i.test(headline) && !KILL.test(headline) && !VIOLENCE.test(headline)) s = 3;
   return { s, th };
 }
+
+// ── helpers for the headline classifier (ml/): high-precision weak labels from the rules above ──
+const FRESH = /\b(killed|kills|dead|death toll|injured|wounded|explosion|shooting|shot)\b/i;
+/** Why a headline is NOT an incident, by the guard rules, or null. */
+export function guardReason(title) {
+  if (new RegExp(FIGURE.source, 'i').test(title)) return 'figure';
+  if (RETRO.test(title) && !FRESH.test(title.replace(/\b(massacre|massacres)\b/gi, ''))) return 'retro';
+  if (GOOD.test(title) && !KILL.test(title) && !MASS.test(title)) return 'good';
+  if (SOFT.test(title) && !HARM.test(title)) return 'soft';
+  return null;
+}
+/** A headline that is clearly a real incident: a death word plus a number of deaths, and no guard fires. */
+export const strongIncident = title => KILL.test(title) && deaths(title) >= 3 && !guardReason(title);

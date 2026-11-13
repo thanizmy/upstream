@@ -9,6 +9,8 @@ import { classify } from './classify.mjs';
 import { classifyLocal, supports } from './classify-local.mjs';
 import { translatePending, translationEnabled } from './translate.mjs';
 import { gdacs, usgs } from './structured.mjs';
+import { loadModel, predict } from './ml/model.mjs';
+import { buildQueue } from './ml/queue.mjs';
 
 const OUT = process.env.OUT_DIR || 'public/data';
 // history.json grows with every day kept, so it lives outside the deployed assets (Workers allow 25 MiB per asset); the workflow keeps it in the Actions cache
@@ -83,7 +85,7 @@ hist.items = hist.items.filter(i => !i.t.includes('�')); // drop headlines sto
 hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored before charset handling was fixed
 for (const i of hist.items) if (i.v !== MODEL_V && !i.a) {
   const r = i.l ? (supports(i.l) ? classifyLocal(i.t, '', i.l) : { s: i.s, th: i.th }) : classify(i.t, '');
-  i.s = r.s; i.th = r.th; i.v = MODEL_V;
+  i.s = r.s; i.th = r.th; i.v = MODEL_V; delete i.sg;
 }
 for (const i of hist.items) if (OV[i.t] != null && !i.a) { i.s = +OV[i.t]; if (i.s < 2) i.th = 'other'; }
 hist.items = hist.items.filter(i => i.s >= 2);
@@ -144,6 +146,15 @@ if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keepin
 const homeByFeed = Object.fromEntries(feeds.filter(f => !isWorld(f)).map(f => [f.name, f.cc || FEED_HINT[f.name]]));
 for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).slice(0, 3); it.cc = cc.length ? cc : homeByFeed[it.f] ? [homeByFeed[it.f]] : []; }
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
+// headline classifier (pipeline/model.json, trained by "npm run train"). In shadow mode it only records mp, the chance a headline is a real incident; in gate mode a serious headline it finds very unlikely (under 20%) drops to 2.
+const MODEL = loadModel();
+if (MODEL) for (const it of items) {
+  if (it.sg != null && MODEL.meta?.mode !== 'gate') { it.s = it.sg; delete it.sg; }
+  if (it.l || it.a) continue;
+  const p = predict(it.t, MODEL); it.mp = +p.toFixed(2);
+  if (MODEL.meta?.mode === 'gate' && it.sg == null && it.s >= 3 && p < 0.2) { it.sg = it.s; it.s = 2; }
+}
+console.log(MODEL ? 'classifier: ' + MODEL.meta.mode + ', trained on ' + MODEL.meta.human + ' human + ' + MODEL.meta.weak + ' weak labels' : 'classifier: no model yet');
 // English translations of local-language headlines (only when a translation provider is configured)
 const tr = await translatePending(items);
 console.log(tr.off ? 'translation: not in use' : `translation: ${tr.done}/${tr.tried} headlines${tr.error ? ', stopped: ' + tr.error : ''}`);
@@ -200,7 +211,7 @@ for (const [cc, list] of Object.entries(perCountry)) {
     const localHosts = new Set(c.items.filter(x => feedHome[x.f] === cc).map(x => x.h));
     const langs = [...new Set(c.items.map(x => x.l || 'en'))].sort();
     return { id: hash(cc + rep.id), cc, h: rep.t, u: rep.u, s, ...(smax !== s ? { s0: smax } : {}), th: Object.entries(themes).sort((a, b) => b[1] - a[1])[0][0],
-      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), ...(rep.te ? { ht: rep.te } : {}), ...(localHosts.size ? { lo: localHosts.size } : {}), ...(langs.length > 1 ? { lg: langs } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
+      d: c.items[0].d, last: c.last, o: outlets.size, conf, r: c.items.length, src: rep.f, ...(rep.l ? { l: rep.l } : {}), ...(rep.te ? { ht: rep.te } : {}), ...(rep.mp != null ? { mp: rep.mp } : {}), ...(localHosts.size ? { lo: localHosts.size } : {}), ...(langs.length > 1 ? { lg: langs } : {}), img: c.items.map(x => x.i).find(Boolean) || '',
       hosts: [...outlets], T: rep.T,
       items: c.items.sort((a, b) => b.d - a.d).map(x => ({ t: x.t, u: x.u, f: x.f, d: dayKey(x.d), s: x.s, ...(x.l ? { l: x.l } : {}), ...(x.te ? { te: x.te } : {}) })) };
   });
@@ -272,7 +283,7 @@ function windowStats(evs, days, z) {
     maxSev: Math.max(0, ...w.map(e => e.s)), band, sev: cnt.slice(1), th, chg
   };
 }
-const tg = e => ({ ...(e.l ? { l: e.l } : {}), ...(e.ht ? { ht: e.ht } : {}), ...(e.lo ? { lo: e.lo } : {}), ...(e.lg ? { lg: e.lg } : {}) });
+const tg = e => ({ ...(e.mp != null ? { mp: e.mp } : {}), ...(e.l ? { l: e.l } : {}), ...(e.ht ? { ht: e.ht } : {}), ...(e.lo ? { lo: e.lo } : {}), ...(e.lg ? { lg: e.lg } : {}) });
 const topOf = (evs, days, n) => [...evs].filter(e => e.last > NOW - days * DAY)
   .sort((a, b) => b.s - a.s || b.conf - a.conf || b.last - a.last).slice(0, n)
   .map(e => ({ id: e.id, h: e.h, u: e.u, s: e.s, th: e.th, o: e.o, r: e.r, d: dayKey(e.d), src: e.src, ...tg(e) }));
@@ -380,6 +391,7 @@ for (const c of countries) {
   }));
 }
 fs.writeFileSync(path.join(OUT, 'brief.json'), JSON.stringify(brief));
+console.log('label queue:', buildQueue(items, MODEL, NOW, path.join(OUT, 'label-queue.json')));
 fs.mkdirSync(path.dirname(HIST_FILE), { recursive: true });
 fs.writeFileSync(HIST_FILE, JSON.stringify({ since: hist.since, items }));
 fs.rmSync(path.join(OUT, 'history.json'), { force: true }); // never deployed

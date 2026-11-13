@@ -71,3 +71,13 @@ Local-language headlines are shown as written. Their link opens a page machine-t
 ## Contributing
 
 Headlines, images and links belong to their publishers; the site links out and does not reproduce articles. Report issues at https://github.com/thanizmy/upstream/issues.
+
+## Headline classifier (shadow mode)
+
+A small model (TF-IDF + logistic regression, plain JavaScript, no API or AI service) learns to tell a real incident from a figure of speech, a past event or good news.
+
+1. Open `#review` on the site, answer "Real incident / Not an incident" for the queued headlines (aim for 300–500), and press **Copy labels**.
+2. Merge the JSON into `pipeline/ml/labels.json` (`{ "headline": 1 or 0 }`) and run `npm run train`. It prints held-out precision and recall and the headlines it still gets wrong, and writes `pipeline/model.json`.
+3. The model starts in **shadow** mode (`meta.mode`): it only records the chance of "real incident" next to each headline (shown on `#review`) and changes no score. When the held-out numbers and the shadow comparison look good, set `meta.mode` to `gate`; then a serious headline the model puts under 20% drops to severity 2. Set it back to `shadow` to undo.
+
+Weak labels from the rule guards in `classify.mjs` fill in until enough human labels exist; they are weighted lower.
