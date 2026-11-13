@@ -8,6 +8,7 @@ import { COUNTRIES, detectCountries } from './countries.mjs';
 import { classify } from './classify.mjs';
 import { classifyLocal, supports } from './classify-local.mjs';
 import { translatePending, translationEnabled } from './translate.mjs';
+import { gdacs, usgs } from './structured.mjs';
 
 const OUT = process.env.OUT_DIR || 'public/data';
 // history.json grows with every day kept, so it lives outside the deployed assets (Workers allow 25 MiB per asset); the workflow keeps it in the Actions cache
@@ -80,11 +81,11 @@ try {
 } catch (e) { console.warn('history load failed, starting fresh:', e.message); }
 hist.items = hist.items.filter(i => !i.t.includes('�')); // drop headlines stored before charset decoding was added
 hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored before charset handling was fixed
-for (const i of hist.items) if (i.v !== MODEL_V) {
+for (const i of hist.items) if (i.v !== MODEL_V && !i.a) {
   const r = i.l ? (supports(i.l) ? classifyLocal(i.t, '', i.l) : { s: i.s, th: i.th }) : classify(i.t, '');
   i.s = r.s; i.th = r.th; i.v = MODEL_V;
 }
-for (const i of hist.items) if (OV[i.t] != null) { i.s = +OV[i.t]; if (i.s < 2) i.th = 'other'; }
+for (const i of hist.items) if (OV[i.t] != null && !i.a) { i.s = +OV[i.t]; if (i.s < 2) i.th = 'other'; }
 hist.items = hist.items.filter(i => i.s >= 2);
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
@@ -123,6 +124,18 @@ await Promise.all(Array.from({ length: 40 }, async () => {
     } catch (e) { health.push({ name: f.name, ok: false, err: e.message }); }
   }
 }));
+// authoritative hazard feeds: severity comes from the data (GDACS alert level, USGS magnitude and PAGER alert), not from headline words
+for (const [name, load] of [['GDACS (alerts)', gdacs], ['USGS (earthquakes)', usgs]]) {
+  try {
+    const { items: sx, total } = await load(NOW); let used = 0;
+    for (const it of sx) {
+      const id = hash(it.u); if (byId.has(id)) continue;
+      byId.set(id, { id, t: it.title, d: it.t, u: it.u, f: it.f, h: hostOf(it.u), cc: it.cc, s: it.s, th: it.th, v: MODEL_V, a: 1 });
+      fresh++; used++;
+    }
+    health.push({ name, ok: true, items: total, used }); feeds.push({ name, url: '', structured: true });
+  } catch (e) { health.push({ name, ok: false, err: e.message }); feeds.push({ name, url: '', structured: true }); }
+}
 const feedsOk = health.filter(h => h.ok).length;
 console.log(`feeds ok ${feedsOk}/${feeds.length}, new tagged items ${fresh}, bad items ${bad}`);
 if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keeping previous output'); process.exit(1); }
