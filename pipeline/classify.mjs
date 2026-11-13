@@ -20,6 +20,10 @@ const bigQuake = t => { const m = t.match(/\b(?:magnitude|M)\s?(\d(?:\.\d)?)\b/)
 // Signs that something actually went wrong, and signs the story is about heritage, culture or a rehearsal, not an incident.
 const HARM = R('\\b(injur\\w+|wounded|hurt|dead|deaths?|killed|casualt\\w+|damag\\w+|destroy\\w+|evacuat\\w+|homeless|missing|trapped|stranded|collaps\\w+|razed|emergency|rescu\\w+|victims?|hospitali[sz]\\w+|displaced|death toll|fatalit\\w+)\\b');
 const SOFT = R('\\b(heritage|museum|anniversary|exhibit\\w*|festival|documentary|memorial|commemorat\\w+|historic\\w*|ancient|tourist\\w*|tourism|monument|recipe|video game|movie|film|novel|theme park|simulation|drill|exercise)\\b');
+// Looking back, remembering or an obituary: the harm is in the past and the story is not a new incident.
+const RETRO = R('\\b(survivors?|survived|holocaust|anniversary|remembers?|remembered|remembering|tributes?|honou?rs?|honou?red|commemorat\\w+|memorial|legacy|obituary|mourns?|(dies|died) (at|aged) \\d+|aged \\d+|years (after|since|on)|in memory)\\b');
+// Good news that happens to use a harm word.
+const GOOD = R('\\b(rescued all|all (\\w+ )?(rescued|safe)|safely|freed|released|reopens?|reopened|recover(s|ed|y)|rebuil(d|ds|ding|t)|ceasefire (holds|extended)|peace (deal|agreement) (signed|reached)|wins?|awarded|celebrat\\w+|breakthrough)\\b');
 const NUM_DEAD = /\b(\d{1,3}(?:,\d{3})*|\d+)\s+(?:people\s+|civilians\s+|children\s+|worshippers\s+|soldiers\s+)?(?:have been\s+|were\s+|are\s+)?(?:killed|dead|dies|died|lives lost|fatalities)\b/i;
 const DEAD_NUM = /\b(?:kill(?:s|ed|ing)|leaves?|left|claims?)\s+(?:at least\s+|over\s+|more than\s+)?(\d{1,3}(?:,\d{3})*|\d+)\b/i;
 const WORDNUM = { dozens: 24, scores: 40, hundreds: 200, thousands: 2000 };
@@ -52,6 +56,9 @@ export function classify(title, summary = '') {
   const hardWords = KILL.test(headline) || VIOLENCE.test(headline) || DISASTER.test(headline) || HEALTH.test(headline);
   if (SPORT.test(headline) && !hardWords) return { s: 1, th: 'other' };
   const n = deaths(t);
+  const fresh = /\b(killed|kills|dead|death toll|injured|wounded|explosion|shooting|shot)\b/i;
+  if (RETRO.test(headline) && !fresh.test(headline.replace(/\b(massacre|massacres)\b/gi, ''))) return { s: 1, th: 'other' }; // survivors, anniversaries and obituaries are not new incidents
+  if (GOOD.test(headline) && !KILL.test(headline) && !MASS.test(headline) && n < 10) return { s: Math.min(2, th === 'politics' ? 2 : 1), th }; // good news with a harm word
   if (SOFT.test(headline) && !HARM.test(t)) return { s: 1, th: 'other' }; // heritage, culture and drills are not incidents
   let s = 1;
   if (MASS.test(headline)) s = 5;

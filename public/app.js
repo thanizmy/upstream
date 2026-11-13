@@ -341,11 +341,11 @@
     if (s === 'gap') rows.sort(function (a, b) { var ga = W(a).band >= 3 ? 0 : 1, gb = W(b).band >= 3 ? 0 : 1; return ga - gb || W(a).src - W(b).src || W(b).band - W(a).band; });
     else rows.sort(by[s]);
     $('needStat').textContent = rows.length + ' countries · first 10 shown, scroll for more';
-    $('need').innerHTML = '<thead><tr><th>Country</th><th>Level</th><th class="n">Events</th><th class="n">Reports</th><th class="n">Our sources</th><th>Change</th><th>Trend</th></tr></thead><tbody>' +
+    $('need').innerHTML = '<thead><tr><th>Country</th><th>Level</th><th class="n" title="Index score: higher means more serious events, weighted by severity. Weekly view: Routine under 10, Elevated 10, High 30, Critical 100. Monthly view: four times those values.">Index</th><th class="n">Events</th><th class="n">Reports</th><th class="n">Our sources</th><th>Change</th><th>Trend</th></tr></thead><tbody>' +
       rows.map(function (c) {
         var w = W(c);
         return '<tr class="go" data-go="' + c.cc + '" tabindex="0"><td><span class="cn"><span class="fl">' + c.fl + '</span>' + esc(c.k) + (w.thin ? '<span class="thin">thin</span>' : '') + '</span></td>' +
-          '<td>' + pips(w.band) + ' <span class="lv">' + BAND[w.band] + '</span></td><td class="n">' + w.ev + '</td><td class="n">' + w.rep + '</td><td class="n">' + w.src + '</td><td>' + chgHtml(w) + '</td><td>' + trend(c) + '</td></tr>';
+          '<td>' + pips(w.band) + ' <span class="lv">' + BAND[w.band] + '</span></td><td class="n"><b>' + (w.S != null ? Math.round(w.S) : '') + '</b></td><td class="n">' + w.ev + '</td><td class="n">' + w.rep + '</td><td class="n">' + w.src + '</td><td>' + chgHtml(w) + '</td><td>' + trend(c) + '</td></tr>';
       }).join('') + '</tbody>';
   }
   function renderGaps() {

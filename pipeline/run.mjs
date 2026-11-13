@@ -18,7 +18,7 @@ const KEEP_DAYS = 70;
 // Scoring model v2. Severity is impact-based and the same for every country; only events of severity 3 to 5 carry the urgency score.
 //   S = 8*(1+ln n3) + 30*(1+ln n4) + 100*(1+ln n5)   (a tier with no events adds nothing)
 // Weekly level from fixed thresholds on S (10 / 30 / 100); the monthly level uses four times those thresholds on the sum of four weekly scores.
-const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 3;
+const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 4;
 const T3_CAP = 25; // severity-3 events alone can reach Elevated but never High: many minor incidents are not instability
 const THRESH = [10, 30, 100];
 const bandOf = (S, k = 1) => S <= 0 ? 1 : S < THRESH[0] * k ? 2 : S < THRESH[1] * k ? 3 : S < THRESH[2] * k ? 4 : 5;

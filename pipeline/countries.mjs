@@ -28,7 +28,7 @@ const MANUAL = {
   ML: ['Malian', 'Bamako'], NE: ['Niamey'], CM: ['Cameroonian', 'Cameroon'], MZ: ['Cabo Delgado', 'Mozambican'],
   KE: ['Kenyan', 'Nairobi'], UG: ['Ugandan', 'Kampala'], ZA: ['South African', 'South Africa', 'Johannesburg'], EG: ['Egyptian', 'Cairo'],
   SA: ['Saudi', 'Saudi Arabia', 'Riyadh'], AE: ['UAE', 'Emirati', 'Dubai', 'Abu Dhabi'], IQ: ['Iraqi', 'Baghdad', 'Mosul'],
-  PH: ['Filipino', 'Philippine', 'Philippines', 'Manila'], ID: ['Indonesian', 'Jakarta'], TH: ['Thai', 'Bangkok'], VN: ['Vietnamese', 'Hanoi'],
+  PH: ['Filipino', 'Philippine', 'Philippines', 'Manila'], ID: ['Indonesian', 'Jakarta'], TH: ['Thai', 'Bangkok'], VN: ['Vietnamese', 'Hanoi', 'Lao Cai', 'Lào Cai', 'Sa Pa', 'Sapa'],
   BD: ['Bangladeshi', 'Dhaka'], LK: ['Sri Lankan', 'Colombo'], NP: ['Nepali', 'Nepalese', 'Kathmandu'], DE: ['German', 'Germans', 'Berlin'],
   FR: ['French', 'Paris'], IT: ['Italian', 'Italians'], ES: ['Spanish', 'Madrid'], PL: ['Polish', 'Warsaw'], AM: ['Armenian', 'Yerevan'],
   AZ: ['Azerbaijani', 'Baku', 'Nagorno-Karabakh'], BY: ['Belarusian', 'Minsk'], RS: ['Serbian', 'Belgrade'], XK: ['Kosovo', 'Pristina'],
