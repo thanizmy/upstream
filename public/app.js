@@ -542,7 +542,7 @@
     var stat = function () { $('lbStat').textContent = Object.keys(lab).length + ' labelled · ' + q.length + ' in the queue'; };
     $('lbList').innerHTML = '<div class="empty list">Loading…</div>';
     fetch('data/label-queue.json').then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (arr) {
-      q = arr.filter(function (x) { return lab[x.h] == null; }); var shown = q.slice(0, 60); stat();
+      q = arr.filter(function (x) { return lab[x.h] == null; }); var shown = q.slice(0, 100); stat();
       $('lbList').innerHTML = shown.map(function (x, i) {
         return '<div class="urow"><span>' + pips(x.s) + '</span><div><a class="ev" href="' + esc(safeUrl(x.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(x.h) + '</span><span class="m">' + esc(x.f) + (x.mp != null ? ' · classifier: ' + Math.round(x.mp * 100) + '% incident' : '') + '</span></a>' +
           '<span class="acts"><button type="button" class="btn ghost" data-lb="' + i + '" data-y="1">Real incident</button><button type="button" class="btn ghost" data-lb="' + i + '" data-y="0">Not an incident</button></span></div></div>';

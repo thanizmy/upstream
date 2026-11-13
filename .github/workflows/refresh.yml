@@ -28,7 +28,9 @@ jobs:
       - name: Restore saved history
         uses: actions/cache/restore@v4
         with:
-          path: .cache/history.json
+          path: |
+            .cache/history.json
+            .cache/label-pool.json
           key: history-none
           restore-keys: history-
       - name: Build fresh data (continues from the saved history)
@@ -38,7 +40,9 @@ jobs:
       - name: Save history
         uses: actions/cache/save@v4
         with:
-          path: .cache/history.json
+          path: |
+            .cache/history.json
+            .cache/label-pool.json
           key: history-${{ github.run_id }}
       - name: Deploy to Cloudflare
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}

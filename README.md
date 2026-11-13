@@ -81,3 +81,6 @@ A small model (TF-IDF + logistic regression, plain JavaScript, no API or AI serv
 3. The model starts in **shadow** mode (`meta.mode`): it only records the chance of "real incident" next to each headline (shown on `#review`) and changes no score. When the held-out numbers and the shadow comparison look good, set `meta.mode` to `gate`; then a serious headline the model puts under 20% drops to severity 2. Set it back to `shadow` to undo.
 
 Weak labels from the rule guards in `classify.mjs` fill in until enough human labels exist; they are weighted lower.
+
+**Collecting headlines to label.** Every refresh adds new English headlines to a pool (`.cache/label-pool.json`, kept in the Actions cache, capped at 6,000, oldest dropped). The #review page shows a batch of 300, and `data/label-pool.csv` has the whole pool as a spreadsheet: fill the `label` column (1 = real incident, 0 = not), then run `npm run import-labels -- file.csv` to merge it into `pipeline/ml/labels.json`.
+Public datasets that could add labelled headlines later (check each licence before use): MN-DS (Zenodo, 10.5281/zenodo.7394850), HUMVI (dataminr-ai/humvi-dataset), Eventist, CEHA, HUMSET. GDELT is free to download but needs its own theme filtering.

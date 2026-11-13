@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "train": "node pipeline/ml/train.mjs"
+    "train": "node pipeline/ml/train.mjs",
+    "import-labels": "node pipeline/ml/import-labels.mjs"
   },
   "keywords": [],
   "author": "",

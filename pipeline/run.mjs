@@ -391,7 +391,7 @@ for (const c of countries) {
   }));
 }
 fs.writeFileSync(path.join(OUT, 'brief.json'), JSON.stringify(brief));
-console.log('label queue:', buildQueue(items, MODEL, NOW, path.join(OUT, 'label-queue.json')));
+console.log('label pool/queue:', JSON.stringify(buildQueue(items, MODEL, NOW, OUT)));
 fs.mkdirSync(path.dirname(HIST_FILE), { recursive: true });
 fs.writeFileSync(HIST_FILE, JSON.stringify({ since: hist.since, items }));
 fs.rmSync(path.join(OUT, 'history.json'), { force: true }); // never deployed
