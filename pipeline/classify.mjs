@@ -2,7 +2,7 @@
 const R = s => new RegExp(s, 'i');
 
 const SPORT = R('\\b(football|soccer|cricket|rugby|tennis|golf|league|striker|goalkeeper|tournament|olympic|fifa|premier league|world cup|marathon|box office|movie|film|celebrity|fashion|recipe|concert|album|netflix|oscars?|grammy|horoscope|travel guide|best hotels?)\\b');
-const MASS = R('\\b(massacre|genocide|mass (grave|killing|shooting)|famine (declared|conditions)|coup|crimes against humanity|ethnic cleansing|city (falls|captured)|(tsunami|catastrophic (earthquake|flood)))\\b');
+const MASS = R('\\b(massacre|genocide|mass (grave|killing|shooting)|famine (declared|conditions)|coup|crimes against humanity|ethnic cleansing|city (falls|captured)|(tsunami (hits?|struck|strikes|waves?|devastat\\w+|kills?|killed|swamps?|sweeps?|floods?)|catastrophic (earthquake|flood)))\\b');
 const KILL = R('\\b(kill(s|ed|ing)?|dead|dies|died|death toll|deaths|massacred|slain|murdered|martyr(s|ed)?|executed|beheaded|casualt(y|ies)|fatalit(y|ies))\\b');
 const VIOLENCE = R('\\b(airstrike|air strike|shelling|bombing|bomb(s|ed)?|suicide (bomber|attack)|gunmen|militants?|insurgents?|rebels?|terror(ist)?s?|missile|drone strike|ambush|hostages?|abduct(ed|ion|s)?|kidnap(ped|ping|s)?|siege|offensive|invasion|clashes|assault|stabbing|attack(s|ed)?|war)\\b');
 const DISASTER = R('\\b(fire (destroys?|destroyed|ravages?|ravaged|guts?|gutted|sweeps?|swept|breaks? out|broke out)|(house|building|factory|market|forest|apartment|warehouse|hospital|shop) fire|crash(es|ed)?|collision|derail\\w*|collapse(d|s)?|explosion|blaze|earthquake|quake|tsunami|flood(s|ing|ed)?|cyclone|hurricane|typhoon|landslide|wildfire|volcano|eruption|drought|heatwave|storm)\\b');
@@ -48,8 +48,12 @@ export function themeOf(t) {
   return 'other';
 }
 
-/** @returns {{s:number, th:string}} severity 1..5 and theme */
+// Figures of speech and all-clears that contain a hazard word but report no hazard.
+const FIGURE = /\b(no tsunami (threat|worry|danger|risk|warning|alert|concern)s?|tsunami (threat|warning|watch|alert) (lifted|cancell?ed|called off|ended)|(blue|red|green|political|electoral|voter|data|information|tech) (tsunami|earthquake|wave)|political (earthquake|firestorm|bombshell)|landslide (victory|win|election)|(seismic|earth-shattering) (shift|change|win|result))\b/gi;
+
+/** \returns {{s:number, th:string}} severity 1..5 and theme */
 export function classify(title, summary = '') {
+  title = title.replace(FIGURE, ' ').replace(/ {2,}/g, ' ');
   const t = (title + ' . ' + summary.slice(0, 240)).replace(/\s+/g, ' ');
   const th = themeOf(title + ' ' + summary.slice(0, 240));
   const headline = title;
@@ -59,6 +63,7 @@ export function classify(title, summary = '') {
   const fresh = /\b(killed|kills|dead|death toll|injured|wounded|explosion|shooting|shot)\b/i;
   if (RETRO.test(headline) && !fresh.test(headline.replace(/\b(massacre|massacres)\b/gi, ''))) return { s: 1, th: 'other' }; // survivors, anniversaries and obituaries are not new incidents
   if (GOOD.test(headline) && !KILL.test(headline) && !MASS.test(headline) && n < 10) return { s: Math.min(2, th === 'politics' ? 2 : 1), th }; // good news with a harm word
+  if (/\b(elections?|midterms?|polls?|voters?|ballots?|campaign|primary|primaries|lawmakers|senate|congress)\b/i.test(headline) && !KILL.test(headline) && !MASS.test(headline) && n === 0) return { s: 2, th: 'politics' }; // election and party-politics stories that use war or disaster words as metaphor
   if (SOFT.test(headline) && !HARM.test(t)) return { s: 1, th: 'other' }; // heritage, culture and drills are not incidents
   let s = 1;
   if (MASS.test(headline)) s = 5;
