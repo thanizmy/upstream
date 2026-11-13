@@ -49,7 +49,7 @@ export function themeOf(t) {
 }
 
 // Figures of speech and all-clears that contain a hazard word but report no hazard.
-const FIGURE = /\b(no tsunami (threat|worry|danger|risk|warning|alert|concern)s?|tsunami (threat|warning|watch|alert) (lifted|cancell?ed|called off|ended)|(blue|red|green|political|electoral|voter|data|information|tech) (tsunami|earthquake|wave)|political (earthquake|firestorm|bombshell)|landslide (victory|win|election)|(seismic|earth-shattering) (shift|change|win|result))\b/gi;
+const FIGURE = /\b(no tsunami (threat|worry|danger|risk|warning|alert|concern)s?|tsunami (threat|warning|watch|alert) (lifted|cancell?ed|called off|ended)|(blue|red|green|political|electoral|voter|data|information|tech) (tsunami|earthquake|wave)|political (earthquake|firestorm|bombshell)|landslide (victory|win|election)|(seismic|earth-shattering) (shift|change|win|result)|(trade|price|culture|tech|bidding|turf|ratings|streaming|currency|word) wars?|war of words|war on (drugs|poverty|cancer|waste|red tape)|bombshell|killer (app|feature|instinct)|killing it|dead (heat|end|zone)|(market|stock|share|price|crypto|bitcoin|currency)s? (crash|crashes|crashed|plunge|plunges|collapse|collapses|collapsed|bloodbath)|bloodbath)\b/gi;
 
 /** \returns {{s:number, th:string}} severity 1..5 and theme */
 export function classify(title, summary = '') {

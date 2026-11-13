@@ -536,13 +536,36 @@
   $('sort').addEventListener('change', renderNeed);
   $('goNeed').addEventListener('click', function (e) { e.preventDefault(); $('need').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
 
+  /** Severity check page: top events with a picker; picks are kept locally and can be copied as overrides.json content. */
+  function renderReview() {
+    var KEY = 'upstream.review.v1', picks = load(KEY, {}) || {}, seen = {}, list = [];
+    ['w7', 'm30'].forEach(function (v) { ((D.urgent && D.urgent[v]) || []).forEach(function (u) { if (!seen[u.h]) { seen[u.h] = 1; list.push(u); } }); });
+    list.sort(function (a, b) { return b.s - a.s || (b.o || 0) - (a.o || 0); });
+    $('revStat').textContent = list.length + ' events · ' + Object.keys(picks).length + ' corrected';
+    $('revList').innerHTML = list.map(function (u, i) {
+      var cur = picks[u.h] != null ? picks[u.h] : '';
+      return '<div class="urow"><span>' + pips(u.s) + '</span><div><a class="ev" href="' + esc(trUrl(safeUrl(u.u), u.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(u.h) + '</span><span class="m">' + esc(u.c) + ' · ' + esc(TH[u.th] || u.th) + ' · ' + (u.o || 1) + ' outlet' + ((u.o || 1) > 1 ? 's' : '') + '</span></a>' +
+        '<label class="sub">Should be: <select data-rv="' + i + '"><option value="">Scored correctly (' + u.s + ')</option>' + [1, 2, 3, 4, 5].map(function (n) { return '<option value="' + n + '"' + (String(cur) === String(n) ? ' selected' : '') + '>' + n + (n === 1 ? ' · not an incident' : '') + '</option>'; }).join('') + '</select></label></div></div>';
+    }).join('') || '<div class="empty list">No urgent events yet.</div>';
+    $('revList').onchange = function (e) {
+      var s = e.target.closest('select[data-rv]'); if (!s) return;
+      var u = list[+s.dataset.rv]; if (s.value === '') delete picks[u.h]; else picks[u.h] = +s.value;
+      save(KEY, picks); $('revStat').textContent = list.length + ' events · ' + Object.keys(picks).length + ' corrected';
+    };
+    $('revCopy').onclick = function () {
+      var txt = JSON.stringify(picks, null, 2), done = function () { $('revMsg').textContent = Object.keys(picks).length + ' corrections copied'; };
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Copy this', txt); }); else window.prompt('Copy this', txt);
+    };
+    $('revClear').onclick = function () { save(KEY, {}); renderReview(); };
+  }
   function route() {
     var h = (location.hash || '#brief').slice(1), t = 'brief', m = h.match(/^c\/([A-Za-z]{2})$/);
-    if (m) t = 'country'; else if (['brief', 'prayer', 'about'].indexOf(h) >= 0) t = h;
+    if (m) t = 'country'; else if (['brief', 'prayer', 'about', 'review'].indexOf(h) >= 0) t = h;
     if (t === 'prayer' && !user) { location.hash = '#brief'; return; }
-    ['brief', 'country', 'prayer', 'about'].forEach(function (k) { $('tab-' + k).hidden = k !== t; });
+    ['brief', 'country', 'prayer', 'about', 'review'].forEach(function (k) { $('tab-' + k).hidden = k !== t; });
     document.querySelectorAll('nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.tab === t); });
     if (t === 'prayer') renderPrayer();
+    if (t === 'review') renderReview();
     if (t === 'country') renderProfile(m[1].toUpperCase());
     window.scrollTo(0, 0);
   }

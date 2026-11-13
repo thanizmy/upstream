@@ -12,6 +12,9 @@ import { translatePending, translationEnabled } from './translate.mjs';
 const OUT = process.env.OUT_DIR || 'public/data';
 // history.json grows with every day kept, so it lives outside the deployed assets (Workers allow 25 MiB per asset); the workflow keeps it in the Actions cache
 const HIST_FILE = process.env.HISTORY_FILE || '.cache/history.json';
+// Headlines a reviewer marked as scored wrongly: { "exact headline": severity 1..5 }. Edit pipeline/overrides.json (the #review page builds the JSON).
+const OV = fs.existsSync('pipeline/overrides.json') ? JSON.parse(fs.readFileSync('pipeline/overrides.json', 'utf8')) : {};
+const ovr = (title, r) => OV[title] != null ? { s: +OV[title], th: OV[title] < 2 ? 'other' : r.th } : r;
 const NOW = Date.now();
 const DAY = 864e5;
 const KEEP_DAYS = 70;
@@ -81,6 +84,7 @@ for (const i of hist.items) if (i.v !== MODEL_V) {
   const r = i.l ? (supports(i.l) ? classifyLocal(i.t, '', i.l) : { s: i.s, th: i.th }) : classify(i.t, '');
   i.s = r.s; i.th = r.th; i.v = MODEL_V;
 }
+for (const i of hist.items) if (OV[i.t] != null) { i.s = +OV[i.t]; if (i.s < 2) i.th = 'other'; }
 hist.items = hist.items.filter(i => i.s >= 2);
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
@@ -110,7 +114,7 @@ await Promise.all(Array.from({ length: 40 }, async () => {
         if (!cc.length && !isWorld(f) && (f.cc || FEED_HINT[f.name])) cc = [f.cc || FEED_HINT[f.name]];
         if (!cc.length) continue;
         const lang = f.lang || 'en';
-        const { s, th } = lang === 'en' ? classify(it.title, it.summary) : classifyLocal(it.title, it.summary, lang);
+        const { s, th } = ovr(it.title, lang === 'en' ? classify(it.title, it.summary) : classifyLocal(it.title, it.summary, lang));
         if (s < 2) continue;
         byId.set(id, { id, t: it.title, d: it.t, u: it.u, f: f.name, h: hostOf(it.u), cc, s, th, v: MODEL_V, ...(lang !== 'en' ? { l: lang } : {}), ...(s >= 4 && it.img ? { i: it.img } : {}) });
         fresh++; used++;
