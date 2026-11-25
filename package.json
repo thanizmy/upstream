@@ -6,14 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "train": "node pipeline/ml/train.mjs",
-    "import-labels": "node pipeline/ml/import-labels.mjs"
+    "eval": "node pipeline/ml/eval.mjs",
+    "import-labels": "node pipeline/ml/import-labels.mjs",
+    "dataset": "node pipeline/ml/dataset.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "fast-xml-parser": "^5.11.2",
-    "world-countries": "^5.1.0"
+    "world-countries": "^5.1.0",
+    "@huggingface/transformers": "^4.3.2"
   },
   "type": "module",
   "devDependencies": {

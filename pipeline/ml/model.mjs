@@ -1,7 +1,5 @@
-// Headline classifier: is this headline a real incident (1) or not (0)?
-// TF-IDF over words and word pairs + logistic regression, in plain JavaScript. No network, no API, no AI service.
-// pipeline/model.json holds the trained vocabulary and weights; train it with `npm run train`.
-import fs from 'node:fs';
+// TF-IDF over words and word pairs + logistic regression, in plain JavaScript: the word-level signal of the headline classifier (see ensemble.mjs).
+// `model` is the { vocab, idf, w, b } object stored under "tfidf" in pipeline/model.json.
 
 export const tokens = t => {
   const w = String(t).toLowerCase().replace(/\d[\d,.]*/g, ' 0 ').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean);
@@ -24,7 +22,3 @@ export const predict = (title, model) => {
   let z = model.b; for (const [i, x] of vectorize(title, model)) z += model.w[i] * x;
   return 1 / (1 + Math.exp(-z)); // probability that the headline is a real incident
 };
-
-export function loadModel(file = new URL('../model.json', import.meta.url)) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
-}

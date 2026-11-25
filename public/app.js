@@ -538,26 +538,33 @@
 
   /** Labelling queue: real incident or not, for training the headline classifier. */
   function renderLabels() {
-    var LK = 'upstream.label.v1', lab = load(LK, {}) || {}, q = [];
+    var LK = 'upstream.label.v1', SK = 'upstream.labelsev.v1', GK = 'upstream.lablang.v1', lab = load(LK, {}) || {}, sevs = load(SK, {}) || {}, lng = load(GK, {}) || {}, q = [];
+    var SEVN = ['1 · not an incident', '2 · hazard word, no harm', '3 · a few casualties or a notable disruption', '4 · 10+ dead or a declared emergency', '5 · 100+ dead or a mass atrocity'];
     var stat = function () { $('lbStat').textContent = Object.keys(lab).length + ' labelled · ' + q.length + ' in the queue'; };
     $('lbList').innerHTML = '<div class="empty list">Loading…</div>';
     fetch('data/label-queue.json').then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (arr) {
       q = arr.filter(function (x) { return lab[x.h] == null; }); var shown = q.slice(0, 100); stat();
       $('lbList').innerHTML = shown.map(function (x, i) {
-        return '<div class="urow"><span>' + pips(x.s) + '</span><div><a class="ev" href="' + esc(safeUrl(x.u)) + '" target="_blank" rel="noopener"><span class="h">' + esc(x.h) + '</span><span class="m">' + esc(x.f) + (x.mp != null ? ' · classifier: ' + Math.round(x.mp * 100) + '% incident' : '') + '</span></a>' +
-          '<span class="acts"><button type="button" class="btn ghost" data-lb="' + i + '" data-y="1">Real incident</button><button type="button" class="btn ghost" data-lb="' + i + '" data-y="0">Not an incident</button></span></div></div>';
+        return '<div class="urow"><span>' + pips(x.s) + '</span><div><a class="ev" href="' + esc(trUrl(safeUrl(x.u), x.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(x.h) + '</span><span class="m">' + esc(x.f) + (x.l ? ' · ' + esc(x.l.toUpperCase()) : '') + (x.mp != null ? ' · classifier: ' + Math.round(x.mp * 100) + '% incident' : '') + '</span></a>' +
+          '<span class="acts"><button type="button" class="btn ghost" data-lb="' + i + '" data-y="1">Real incident</button><button type="button" class="btn ghost" data-lb="' + i + '" data-y="0">Not an incident</button>' +
+          '<select data-sv="' + i + '" aria-label="Severity (optional)"><option value="">Severity (optional)</option>' + SEVN.map(function (t, n) { return '<option value="' + (n + 1) + '"' + (String(sevs[x.h]) === String(n + 1) ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select></span></div></div>';
       }).join('') || '<div class="empty list">Nothing left to label right now. New headlines arrive with each refresh.</div>';
       $('lbList').onclick = function (e) {
         var b = e.target.closest('button[data-lb]'); if (!b) return;
-        var x = shown[+b.dataset.lb]; lab[x.h] = +b.dataset.y; save(LK, lab);
+        var x = shown[+b.dataset.lb]; lab[x.h] = +b.dataset.y; save(LK, lab); if (x.l) { lng[x.h] = x.l; save(GK, lng); }
         var row = b.closest('.urow'); row.style.opacity = '.45'; b.parentNode.querySelectorAll('button').forEach(function (z) { z.disabled = true; }); b.classList.add('done'); stat();
+      };
+      $('lbList').onchange = function (e) {
+        var s = e.target.closest('select[data-sv]'); if (!s) return;
+        var x = shown[+s.dataset.sv]; if (s.value === '') delete sevs[x.h]; else sevs[x.h] = +s.value; save(SK, sevs); if (x.l) { lng[x.h] = x.l; save(GK, lng); }
       };
     });
     $('lbCopy').onclick = function () {
-      var txt = JSON.stringify(lab, null, 2), done = function () { $('lbMsg').textContent = Object.keys(lab).length + ' labels copied'; };
+      var lg = {}; Object.keys(lng).forEach(function (h) { if (lab[h] != null || sevs[h] != null) lg[h] = lng[h]; });
+      var txt = JSON.stringify({ labels: lab, severity: sevs, lang: lg }, null, 2), done = function () { $('lbMsg').textContent = Object.keys(lab).length + ' labels and ' + Object.keys(sevs).length + ' severities copied'; };
       if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Copy this', txt); }); else window.prompt('Copy this', txt);
     };
-    $('lbClear').onclick = function () { save(LK, {}); renderLabels(); };
+    $('lbClear').onclick = function () { save(LK, {}); save(SK, {}); save(GK, {}); renderLabels(); };
   }
   /** Severity check page: top events with a picker; picks are kept locally and can be copied as overrides.json content. */
   function renderReview() {

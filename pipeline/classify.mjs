@@ -1,8 +1,12 @@
 // Rule-based severity (1-5) and theme for a report. Deliberately transparent: every rule is a regex.
 const R = s => new RegExp(s, 'i');
 
-const SPORT = R('\\b(football|soccer|cricket|rugby|tennis|golf|league|striker|goalkeeper|tournament|olympic|fifa|premier league|world cup|marathon|box office|movie|film|celebrity|fashion|recipe|concert|album|netflix|oscars?|grammy|horoscope|travel guide|best hotels?)\\b');
-const MASS = R('\\b(massacre|genocide|mass (grave|killing|shooting)|famine (declared|conditions)|coup|crimes against humanity|ethnic cleansing|city (falls|captured)|(tsunami (hits?|struck|strikes|waves?|devastat\\w+|kills?|killed|swamps?|sweeps?|floods?)|catastrophic (earthquake|flood)))\\b');
+const SPORT = R('\\b(football|soccer|cricket|rugby|tennis|golf|league|striker|goalkeeper|tournament|olympic|fifa|premier league|world cup|marathon|box office|movie|film|celebrity|fashion|recipe|concert|album|netflix|oscars?|grammy|horoscope|travel guide|best hotels?|hat[- ]?trick|\\w+-goal|\\d-\\d (win|loss|defeat|victory|draw)|semi-?finals?|quarter-?finals?|playoffs?|midfielders?|relegation|fixtures?|strikes late (as|to|for))\\b');
+// Unambiguous match-report wording: wins over a violence word such as "ambush" in a football headline ("late six-goal ambush").
+const SPORT_STRONG = R('\\b(hat[- ]?trick|\\w+-goal|\\d-\\d (win|loss|defeat|victory|draw)|semi-?finals?|quarter-?finals?|playoffs?|midfielders?|relegation|strikes late (as|to|for))\\b');
+// Political crisis without a violence word: accusations of a coup, a constitutional crisis, a government falling. Rated 3 like protests; the word "coup" alone is no longer a mass event.
+const POL_CRISIS = R('(constitutional (coup|crisis)|[\'‘"“]coup[\'’"”]|coup (claims?|allegations?|accusations?)|accus\\w+ (\\w+ )*of (a )?[\'‘"“]?(constitutional )?coup|in turmoil|political turmoil|government (collapses?|collapsed|falls|toppled))');
+const MASS = R('\\b(massacre|genocide|mass (grave|killing|shooting)|famine (declared|conditions)|(military |army |palace |junta |failed |attempted |foiled |bloodless |alleged )coup|coup (attempt|plot|bid|leader|d.[eé]tat|against|in)|(stag(e|es|ed|ing)|launch(es|ed|ing)?|plot(s|ted|ting)?) (a )?coup|in a (\\w+ )?coup|crimes against humanity|ethnic cleansing|city (falls|captured)|(tsunami (hits?|struck|strikes|waves?|devastat\\w+|kills?|killed|swamps?|sweeps?|floods?)|catastrophic (earthquake|flood)))\\b');
 const KILL = R('\\b(kill(s|ed|ing)?|dead|dies|died|death toll|deaths|massacred|slain|murdered|martyr(s|ed)?|executed|beheaded|casualt(y|ies)|fatalit(y|ies))\\b');
 const VIOLENCE = R('\\b(airstrike|air strike|shelling|bombing|bomb(s|ed)?|suicide (bomber|attack)|gunmen|militants?|insurgents?|rebels?|terror(ist)?s?|missile|drone strike|ambush|hostages?|abduct(ed|ion|s)?|kidnap(ped|ping|s)?|siege|offensive|invasion|clashes|assault|stabbing|attack(s|ed)?|war)\\b');
 const DISASTER = R('\\b(fire (destroys?|destroyed|ravages?|ravaged|guts?|gutted|sweeps?|swept|breaks? out|broke out)|(house|building|factory|market|forest|apartment|warehouse|hospital|shop) fire|crash(es|ed)?|collision|derail\\w*|collapse(d|s)?|explosion|blaze|earthquake|quake|tsunami|flood(s|ing|ed)?|cyclone|hurricane|typhoon|landslide|wildfire|volcano|eruption|drought|heatwave|storm)\\b');
@@ -58,7 +62,7 @@ export function classify(title, summary = '') {
   const th = themeOf(title + ' ' + summary.slice(0, 240));
   const headline = title;
   const hardWords = KILL.test(headline) || VIOLENCE.test(headline) || DISASTER.test(headline) || HEALTH.test(headline);
-  if (SPORT.test(headline) && !hardWords) return { s: 1, th: 'other' };
+  if ((SPORT.test(headline) && !hardWords) || (SPORT_STRONG.test(headline) && !KILL.test(headline))) return { s: 1, th: 'other' };
   const n = deaths(t);
   const fresh = /\b(killed|kills|dead|death toll|injured|wounded|explosion|shooting|shot)\b/i;
   if (RETRO.test(headline) && !fresh.test(headline.replace(/\b(massacre|massacres)\b/gi, ''))) return { s: 1, th: 'other' }; // survivors, anniversaries and obituaries are not new incidents
@@ -79,22 +83,10 @@ export function classify(title, summary = '') {
   else if (DISASTER.test(headline) || DISPLACE.test(headline) || UNREST.test(headline)) s = 3;
   else if (th === 'persecution') s = 3;
   else if (HARM_STRONG.test(headline)) s = 3;
+  else if (POL_CRISIS.test(headline)) s = 3;
   else if (POLITICS.test(headline)) s = 2;
   else s = 1;
   // everyday politics and generic strikes should not read as emergencies
   if (s === 4 && /\b(strike)\b/i.test(headline) && !KILL.test(headline) && !VIOLENCE.test(headline)) s = 3;
   return { s, th };
 }
-
-// ── helpers for the headline classifier (ml/): high-precision weak labels from the rules above ──
-const FRESH = /\b(killed|kills|dead|death toll|injured|wounded|explosion|shooting|shot)\b/i;
-/** Why a headline is NOT an incident, by the guard rules, or null. */
-export function guardReason(title) {
-  if (new RegExp(FIGURE.source, 'i').test(title)) return 'figure';
-  if (RETRO.test(title) && !FRESH.test(title.replace(/\b(massacre|massacres)\b/gi, ''))) return 'retro';
-  if (GOOD.test(title) && !KILL.test(title) && !MASS.test(title)) return 'good';
-  if (SOFT.test(title) && !HARM.test(title)) return 'soft';
-  return null;
-}
-/** A headline that is clearly a real incident: a death word plus a number of deaths, and no guard fires. */
-export const strongIncident = title => KILL.test(title) && deaths(title) >= 3 && !guardReason(title);

@@ -14,6 +14,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -25,6 +26,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+        env:
+          ONNXRUNTIME_NODE_INSTALL_CUDA: skip # CPU inference only: do not download the CUDA binaries
+      - name: Restore the embedding model (about 100 MB, used by the headline classifier)
+        id: embedcache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/models
+          key: embed-model-multilingual-e5-small-q8
       - name: Restore saved history
         uses: actions/cache/restore@v4
         with:
@@ -44,6 +53,12 @@ jobs:
             .cache/history.json
             .cache/label-pool.json
           key: history-${{ github.run_id }}
+      - name: Save the embedding model (only when it downloaded)
+        if: ${{ steps.embedcache.outputs.cache-hit != 'true' && hashFiles('.cache/models/**/*.onnx') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/models
+          key: embed-model-multilingual-e5-small-q8
       - name: Deploy to Cloudflare
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: npx wrangler deploy

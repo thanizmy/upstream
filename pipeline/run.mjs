@@ -9,7 +9,7 @@ import { classify } from './classify.mjs';
 import { classifyLocal, supports } from './classify-local.mjs';
 import { translatePending, translationEnabled } from './translate.mjs';
 import { gdacs, usgs } from './structured.mjs';
-import { loadModel, predict } from './ml/model.mjs';
+import { loadEnsemble, scoreItems, EXEMPT_THEMES } from './ml/ensemble.mjs';
 import { buildQueue } from './ml/queue.mjs';
 
 const OUT = process.env.OUT_DIR || 'public/data';
@@ -24,7 +24,7 @@ const KEEP_DAYS = 70;
 // Scoring model v2. Severity is impact-based and the same for every country; only events of severity 3 to 5 carry the urgency score.
 //   S = 8*(1+ln n3) + 30*(1+ln n4) + 100*(1+ln n5)   (a tier with no events adds nothing)
 // Weekly level from fixed thresholds on S (10 / 30 / 100); the monthly level uses four times those thresholds on the sum of four weekly scores.
-const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 5;
+const TW = { 3: 8, 4: 30, 5: 100 }, SOLO_CAP = 5, MODEL_V = 6; // 6: "coup" needs a coup context (not French "grand coup"), sports guard covers "strikes late" / hat tricks
 const T3_CAP = 25; // severity-3 events alone can reach Elevated but never High: many minor incidents are not instability
 const THRESH = [10, 30, 100];
 const bandOf = (S, k = 1) => S <= 0 ? 1 : S < THRESH[0] * k ? 2 : S < THRESH[1] * k ? 3 : S < THRESH[2] * k ? 4 : 5;
@@ -82,12 +82,11 @@ try {
   } else if (fs.existsSync(path.join(OUT, 'history.json'))) hist = JSON.parse(fs.readFileSync(path.join(OUT, 'history.json'), 'utf8'));
 } catch (e) { console.warn('history load failed, starting fresh:', e.message); }
 hist.items = hist.items.filter(i => !i.t.includes('�')); // drop headlines stored before charset decoding was added
-hist.items = hist.items.filter(i => !i.t.includes('�')); // headlines stored before charset handling was fixed
 for (const i of hist.items) if (i.v !== MODEL_V && !i.a) {
   const r = i.l ? (supports(i.l) ? classifyLocal(i.t, '', i.l) : { s: i.s, th: i.th }) : classify(i.t, '');
-  i.s = r.s; i.th = r.th; i.v = MODEL_V; delete i.sg;
+  i.s = r.s; i.th = r.th; i.v = MODEL_V; delete i.sg; delete i.mv;
 }
-for (const i of hist.items) if (OV[i.t] != null && !i.a) { i.s = +OV[i.t]; if (i.s < 2) i.th = 'other'; }
+for (const i of hist.items) if (OV[i.t] != null && !i.a) { i.s = +OV[i.t]; if (i.s < 2) i.th = 'other'; delete i.sg; delete i.mv; }
 hist.items = hist.items.filter(i => i.s >= 2);
 const byId = new Map(hist.items.map(i => [i.id, i]));
 
@@ -146,15 +145,21 @@ if (feedsOk < feeds.length * 0.4) { console.error('too many feeds failed; keepin
 const homeByFeed = Object.fromEntries(feeds.filter(f => !isWorld(f)).map(f => [f.name, f.cc || FEED_HINT[f.name]]));
 for (const it of byId.values()) if (it.l) { const cc = detectCountries(it.t).slice(0, 3); it.cc = cc.length ? cc : homeByFeed[it.f] ? [homeByFeed[it.f]] : []; }
 const items = [...byId.values()].filter(i => NOW - i.d <= KEEP_DAYS * DAY);
-// headline classifier (pipeline/model.json, trained by "npm run train"). In shadow mode it only records mp, the chance a headline is a real incident; in gate mode a serious headline it finds very unlikely (under 20%) drops to 2.
-const MODEL = loadModel();
-if (MODEL) for (const it of items) {
-  if (it.sg != null && MODEL.meta?.mode !== 'gate') { it.s = it.sg; delete it.sg; }
-  if (it.l || it.a) continue;
-  const p = predict(it.t, MODEL); it.mp = +p.toFixed(2);
-  if (MODEL.meta?.mode === 'gate' && it.sg == null && it.s >= 3 && p < 0.2) { it.sg = it.s; it.s = 2; }
+// headline classifier (pipeline/model.json, trained by "npm run train"): the chance a headline is a real incident, from TF-IDF + multilingual embeddings + the rule severity.
+// In shadow mode it only records mp (and mv, the model it came from) and changes no score; in gate mode a serious headline under meta.gate drops to severity 2 (the original is kept as sg).
+// Only headlines the rules rate serious are scored, once per trained model, newest first and at most MAX_SCORE per refresh, so the embedding model runs for new headlines, not the whole history.
+// A headline with a person's override (overrides.json) is never touched. If the embedding model cannot load, nothing is scored and no score changes.
+const MODEL = loadEnsemble(), MAX_SCORE = 8000;
+if (MODEL) {
+  const gateOn = MODEL.meta.mode === 'gate', stale = it => it.mv !== MODEL.meta.trained, free = it => !it.a && OV[it.t] == null;
+  const todo = items.filter(it => free(it) && (it.sg ?? it.s) >= 3 && stale(it)).sort((a, b) => b.d - a.d).slice(0, MAX_SCORE); // a demoted headline (sg set) is scored on its rule severity
+  const ps = await scoreItems(MODEL, todo.map(it => ({ t: it.t, lang: it.l || 'en', s: it.sg ?? it.s, th: it.th })));
+  if (ps) todo.forEach((it, k) => { if (it.sg != null) { it.s = it.sg; delete it.sg; } it.mp = +ps[k].toFixed(2); it.mv = MODEL.meta.trained; }); // undo an old demotion only once the headline has a new score
+  if (!gateOn) for (const it of items) if (it.sg != null) { it.s = it.sg; delete it.sg; } // back to shadow: restore every demotion
+  // protests, unrest and political crises count as incidents at their rule severity: the model is not allowed to demote them
+  if (gateOn) for (const it of items) if (free(it) && it.sg == null && it.s >= 3 && it.mv === MODEL.meta.trained && it.mp < MODEL.meta.gate && !EXEMPT_THEMES.has(it.th)) { it.sg = it.s; it.s = 2; }
 }
-console.log(MODEL ? 'classifier: ' + MODEL.meta.mode + ', trained on ' + MODEL.meta.human + ' human + ' + MODEL.meta.weak + ' weak labels' : 'classifier: no model yet');
+console.log(MODEL ? 'classifier: ' + MODEL.meta.mode + ', gate ' + MODEL.meta.gate + ', trained on ' + MODEL.meta.human + ' human labels' : 'classifier: no model yet');
 // English translations of local-language headlines (only when a translation provider is configured)
 const tr = await translatePending(items);
 console.log(tr.off ? 'translation: not in use' : `translation: ${tr.done}/${tr.tried} headlines${tr.error ? ', stopped: ' + tr.error : ''}`);
@@ -391,10 +396,11 @@ for (const c of countries) {
   }));
 }
 fs.writeFileSync(path.join(OUT, 'brief.json'), JSON.stringify(brief));
-console.log('label pool/queue:', JSON.stringify(buildQueue(items, MODEL, NOW, OUT)));
+console.log('label pool/queue:', JSON.stringify(buildQueue(items, NOW, OUT)));
 fs.mkdirSync(path.dirname(HIST_FILE), { recursive: true });
 fs.writeFileSync(HIST_FILE, JSON.stringify({ since: hist.since, items }));
 fs.rmSync(path.join(OUT, 'history.json'), { force: true }); // never deployed
 fs.writeFileSync(path.join(OUT, 'health.json'), JSON.stringify({ generated: brief.generated, feeds: health }));
 console.log(`countries ${countries.length}, urgent3d ${brief.urgent.w7.length}, urgent30d ${brief.urgent.w30.length}, stories ${brief.stories.w7.length}, top5 ${brief.top5.join(',')}, baseline ${baselineReady}, span ${spanDays}d`);
 console.log('moved up:', moved.w7.up.map(r => r.k + ' ' + (r.pct ?? 'new')).join(', '), '| themes:', moved.w7.themes.map(t => t.th + ' ' + t.pct).join(', '), '| sudden:', moved.w7.sudden.map(e => e.c).join(', '));
+process.exit(0); // the embedding model can leave native work pending; everything is written by now
