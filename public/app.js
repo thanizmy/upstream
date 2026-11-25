@@ -6,7 +6,7 @@
   var WK = 'upstream.watch.v2', PK = 'upstream.pray.v1', VK = 'upstream.view.v1';
   var user = null;
   var D, byCc = {}, view = 'w7', world = null, profileCache = {};
-  var mapV = { k: 1, x: 0, y: 0 }, MAXK = 8, mapDragged = false; // map zoom: scale and top-left of the visible area
+  var mapV = { k: 1, x: 0, y: 0 }, MAXK = 8, mapDragged = false, mapBand = 0; // mapBand: 0 = all levels, 1-5 = show only countries at that level; map zoom: scale and top-left of the visible area
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -88,6 +88,15 @@
     return '<svg class="spark' + (big ? ' big' : '') + '" viewBox="0 0 ' + Wd + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Events per day, last ' + days + ' days">' + b + '<line class="base" x1="0" y1="' + H + '" x2="' + Wd + '" y2="' + H + '"/></svg>' +
       '<span class="sparkcap"><span>' + days + ' days ago</span><span>' + mx + ' peak</span><span>today</span></span>';
   }
+  /** Two groups of headlines: World (English-language outlets) and Local (the country's own languages). rows: [{ l, html }] */
+  function groupHtml(rows, emptyMsg) {
+    if (!rows.length) return '<div class="empty">' + emptyMsg + '</div>';
+    var g = [['World headlines', 'English-language outlets', rows.filter(function (r) { return !r.l || r.l === 'en'; })], ['Local headlines', 'local-language outlets, opened as an English translation', rows.filter(function (r) { return r.l && r.l !== 'en'; })]];
+    return g.map(function (x) {
+      return '<section class="grp"><h4 class="grphead"><span>' + x[0] + ' <b>' + x[2].length + '</b></span><small>' + x[1] + '</small></h4><div class="list grplist">' + (x[2].map(function (r) { return r.html; }).join('') || '<div class="empty">None in this selection.</div>') + '</div></section>';
+    }).join('');
+  }
+  function capGroups(el, n) { if (el) el.querySelectorAll('.grplist').forEach(function (g) { cap(g, n); }); }
   function evRow(e, c, withPray) {
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
@@ -253,13 +262,13 @@
     for (var lo = -150; lo <= 180; lo += 30) { var x = ((lo + 180) / 360 * world.w).toFixed(1); html += '<line class="gridline" x1="' + x + '" x2="' + x + '" y1="0" y2="' + world.h + '"/>'; }
     var data = {}; D.countries.forEach(function (c) { data[c.cc] = c; });
     Object.keys(world.paths).forEach(function (cc) {
-      var c = data[cc], w = c && W(c);
+      var c = data[cc], w = c && W(c); if (c && mapBand && w.band !== mapBand) c = null; // a level is selected: other countries are drawn as plain land
       html += '<path d="' + world.paths[cc] + '" class="land' + (c ? ' has' : '') + '"' + (c ? ' data-cc="' + cc + '" style="--k:' + kc(w.band) + '" tabindex="0" role="link" aria-label="' + esc(c.k) + ', ' + BAND[w.band] + '"' : '') + '/>';
     });
     var mx = Math.max.apply(null, D.countries.map(function (c) { return W(c).ev; })) || 1;
     D.countries.forEach(function (c) {
       var d = world.paths[c.cc]; if (d && d.length > 160) return; // big enough to click as a shape
-      var w = W(c); if (!c.ll || !w.ev) return;
+      var w = W(c); if (!c.ll || !w.ev || (mapBand && w.band !== mapBand)) return;
       var cx = (c.ll[1] + 180) / 360 * world.w, cy = (84 - c.ll[0]) / 142 * world.h, r = 3 + Math.sqrt(w.ev / mx) * 9;
       html += '<circle class="dot" data-cc="' + c.cc + '" cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + r.toFixed(1) + '" style="--k:' + kc(w.band) + '"/>';
     });
@@ -319,11 +328,15 @@
     paintView();
     svg.addEventListener('click', function (e) { if (mapDragged) return; var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; });
     svg.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = e.target.closest('[data-cc]'); if (t) location.hash = '#c/' + t.dataset.cc; } });
-    var placed = D.countries.filter(function (c) { return W(c).ev; }).length;
-    $('mapStat').textContent = placed + ' countries with reports · ' + winLabel();
-    $('legendKey').innerHTML = '<span class="k">Level</span>' + [5, 4, 3, 2, 1].map(function (b) { return '<b><i style="--k:' + kc(b) + '"></i>' + BAND[b] + '</b>'; }).join('') + '<b><i style="--k:var(--sink);outline:1px solid var(--rule)"></i>Not tracked</b><small>Dots mark small countries; size shows events.</small>';
+    var placed = D.countries.filter(function (c) { return W(c).ev && (!mapBand || W(c).band === mapBand); }).length;
+    $('mapStat').textContent = placed + (mapBand ? ' ' + BAND[mapBand].toLowerCase() : '') + ' countries with reports · ' + winLabel();
+    $('legendKey').innerHTML = '<span class="k">Level<button type="button" class="lreset" data-lreset="1"' + (mapBand ? '' : ' disabled') + ' title="Show every level again">Reset</button></span>' + [5, 4, 3, 2, 1].map(function (b) { return '<button type="button" class="lb' + (mapBand === b ? ' on' : mapBand ? ' off' : '') + '" data-lb="' + b + '" aria-pressed="' + (mapBand === b) + '" title="' + (mapBand === b ? 'Showing only ' + BAND[b] + '. Select again to show all.' : 'Show only ' + BAND[b] + ' countries') + '"><i style="--k:' + kc(b) + '"></i>' + BAND[b] + '</button>'; }).join('') + '<b><i style="--k:var(--sink);outline:1px solid var(--rule)"></i>Not tracked</b><small>Dots mark small countries; size shows events. Select a level to show only those countries.</small>';
+    $('legendKey').onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      mapBand = b.dataset.lreset ? 0 : (mapBand === +b.dataset.lb ? 0 : +b.dataset.lb); renderMap();
+    };
     // regional data table
-    var R = {}; D.countries.forEach(function (c) { var w = W(c); if (!w.ev) return; var r = R[c.region] = R[c.region] || { n: 0, hot: 0, ev: 0, rep: 0 }; r.n++; r.ev += w.ev; r.rep += w.rep; if (w.band >= 4) r.hot++; });
+    var R = {}; D.countries.forEach(function (c) { var w = W(c); if (!w.ev || (mapBand && w.band !== mapBand)) return; var r = R[c.region] = R[c.region] || { n: 0, hot: 0, ev: 0, rep: 0 }; r.n++; r.ev += w.ev; r.rep += w.rep; if (w.band >= 4) r.hot++; });
     $('regions').innerHTML = '<thead><tr><th>Region</th><th class="n">Countries</th><th class="n">High+</th><th class="n">Events</th></tr></thead><tbody>' +
       Object.keys(R).sort(function (x, y) { return R[y].hot - R[x].hot || R[y].ev - R[x].ev; }).map(function (k) {
         var r = R[k]; return '<tr><td>' + esc(k) + '</td><td class="n">' + r.n + '</td><td class="n"><b>' + r.hot + '</b></td><td class="n">' + r.ev + '</td></tr>';
@@ -398,7 +411,7 @@
       '<div class="sechead"><h2>All <i>reports</i></h2><span class="sub" id="arSub"></span></div>' +
       '<div class="filters"><input type="search" id="fQ" placeholder="Search these headlines…" aria-label="Search headlines by keyword"><select id="fSev" aria-label="Minimum severity"><option value="0">All severities</option><option value="3">Severity 3 and up</option><option value="4">Severity 4 and up</option></select>' +
       '<select id="fTh" aria-label="Theme"><option value="">All themes</option></select><select id="fWin" aria-label="Period"><option value="40">Everything held</option><option value="30">Last 30 days</option><option value="7">Last 7 days</option></select></div>' +
-      '<div class="list scrollbox tall" id="reports"></div>' +
+      '<div id="reports"></div>' +
       '<p class="note">Reports at severity 1 are not stored. Headlines link to the publisher; Upstream does not reproduce articles.</p>';
     // chart severity bar + themes from window stats
     var tot = w.sev.reduce(function (a, b) { return a + b; }, 0) || 1;
@@ -422,21 +435,22 @@
       P.events.forEach(function (e) { e.items.forEach(function (it) { all.push({ t: it.t, te: it.te, u: it.u, f: it.f, l: it.l, d: it.d, s: it.s, th: e.th, n: e.r, eid: e.id }); }); });
       all.sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : b.s - a.s; });
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
-      $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 5 shown, scroll for more' : '');
-      $('uh').innerHTML = urgent.length ? urgent.map(function (e) {
-        return '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span>' + ot(e) + '</a>' + origLink(safeUrl(e.u), e.l) + '</div>';
-      }).join('') : '<div class="empty">No serious events in the data we hold for this country.</div>';
-      cap($('uh'), 5);
+      $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 5 of each group shown, scroll for more' : '');
+      $('uh').innerHTML = groupHtml(urgent.map(function (e) {
+        return { l: e.l, html: '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span>' + ot(e) + '</a>' + origLink(safeUrl(e.u), e.l) + '</div>' };
+      }), 'No serious events in the data we hold for this country.');
+      capGroups($('uh'), 5);
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
         var ms = +$('fSev').value, th = $('fTh').value, days = +$('fWin').value, cut = Date.now() - days * 864e5;
         var q = $('fQ').value.trim().toLowerCase();
         var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut && (!q || ((r.te || '') + ' ' + r.t + ' ' + r.f + ' ' + (TH[r.th] || '')).toLowerCase().indexOf(q) >= 0); });
-        $('arSub').textContent = rows.length + ' of ' + all.length + ' reports · first 5 shown, scroll for more';
-        $('reports').innerHTML = rows.length ? rows.map(function (r) {
-          return '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.te || r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span>' + ot({ ht: r.te, h: r.t }) + '</a>' + origLink(safeUrl(r.u), r.l) + '</div>';
-        }).join('') : '<div class="empty">No reports match these filters.</div>';
-        cap($('reports'), 5);
+        var nl = rows.filter(function (r) { return r.l && r.l !== 'en'; }).length;
+        $('arSub').textContent = rows.length + ' of ' + all.length + ' reports (' + (rows.length - nl) + ' world, ' + nl + ' local) · first 5 of each group shown, scroll for more';
+        $('reports').innerHTML = groupHtml(rows.map(function (r) {
+          return { l: r.l, html: '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.te || r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span>' + ot({ ht: r.te, h: r.t }) + '</a>' + origLink(safeUrl(r.u), r.l) + '</div>' };
+        }), 'No reports match these filters.');
+        capGroups($('reports'), 5);
       }
       ['fSev', 'fTh', 'fWin'].forEach(function (id) { $(id).addEventListener('change', draw); });
       $('fQ').addEventListener('input', draw);
@@ -628,8 +642,8 @@
       evs.sort(function (x, y) { return y.s - x.s || (x.last < y.last ? 1 : -1); });
       d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.toggle('sel', !!pick.day && r.dataset.day === pick.day); });
       list.hidden = false;
-      if (d.classList.contains('panelbox')) setTimeout(function () { cap(list, 5); }, 0);
-      list.innerHTML = evs.length ? evs.map(function (e) { return evRow(e, c, false); }).join('') : '<div class="empty">No headlines for this selection.</div>';
+      list.innerHTML = groupHtml(evs.map(function (e) { return { l: e.l, html: evRow(e, c, false) }; }), 'No headlines for this selection.');
+      if (d.classList.contains('panelbox')) setTimeout(function () { capGroups(list, 5); }, 0);
       cnt.innerHTML = evs.length + ' headline' + (evs.length === 1 ? '' : 's') + ', ' + (pick.day ? esc(label) : label) + ' · most serious first · <button type="button" class="linkbtn" data-clear="' + cc + '">Hide</button>' + (pick.day ? ' · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button>' : '');
     }
     if (crowData[cc]) return draw(crowData[cc]);

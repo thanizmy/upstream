@@ -206,3 +206,14 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .mapctl button:hover:not(:disabled){background:var(--sink)}
 .mapctl button:disabled{color:var(--muted);opacity:.45;cursor:default}
 .mapctl .mapk{flex:1;min-width:48px;text-align:center;font:500 11px "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--ink2);border-left:1px solid var(--rule);border-right:1px solid var(--rule);align-self:stretch;display:flex;align-items:center;justify-content:center}
+
+/* map: select a level to show only those countries */
+.maplegend .lkey .k{display:flex;justify-content:space-between;align-items:center}
+.maplegend .lreset{font:500 10px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:none;border:1px solid var(--rule);padding:3px 8px;cursor:pointer}
+.maplegend .lreset:hover:not(:disabled){background:var(--sink)}.maplegend .lreset:disabled{opacity:.35;cursor:default}
+.maplegend .lb{display:flex;align-items:center;gap:6px;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:3px 4px;margin:0 -4px;cursor:pointer;text-align:left}
+.maplegend .lb:hover{background:var(--sink)}.maplegend .lb.on{color:var(--ink);font-weight:600;background:var(--sink)}.maplegend .lb.off{opacity:.45}
+.maplegend .lb i{width:12px;height:12px;background:var(--k);display:block}
+/* country headlines: World vs Local */
+.grp+.grp{margin-top:18px}.grphead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 6px;font:500 12px "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.grphead b{font-weight:500;color:var(--muted);margin-left:4px}.grphead small{font:11px "IBM Plex Mono",monospace;letter-spacing:0;text-transform:none;color:var(--muted)}
