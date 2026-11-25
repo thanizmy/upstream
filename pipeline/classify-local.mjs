@@ -174,6 +174,8 @@ const NEAR = Object.fromEntries(Object.keys(T).map(l => [l, KILL_NEAR(l)]));
 
 export const LANG_NAME = { es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ru: 'Russian or Ukrainian', id: 'Indonesian', tr: 'Turkish', sw: 'Swahili', ar: 'Arabic', vi: 'Vietnamese', ...LANG_NAME_EXTRA };
 export const supports = lang => !!RX[lang];
+// A number followed by a unit of measure is a weight, distance, price or percentage, never a casualty count ("tiger weighing 140 kg died").
+const UNIT = /\d[\d.,]*\s?(?:kg|㎏|kilo\w*|gram\w*|tons?|tonnes?|tonelad\w*|t[aấ]n|тонн\w*|кг|км|km|m²|m2|cm|mm|ha|hect\w*|%|°c|usd|us\$|\$|€|£|vnd|đồng|tỷ|triệu|كغ|كجم|كيلو\w*|طن|كم|ק"ג|טון|公斤|千克|吨|公里|キロ|トン|킬로\w*|톤)(?![\p{L}])/giu;
 
 export function classifyLocal(title, summary, lang) {
   title = title.normalize('NFC'); summary = summary.normalize('NFC');
@@ -186,7 +188,7 @@ export function classifyLocal(title, summary, lang) {
   if (r.sport.test(h) && !hard) return { s: 1, th: 'other' };
   if (r.soft && r.soft.test(h) && !r.kill.test(t) && !r.dmg.test(t)) return { s: 1, th: 'other' }; // heritage, culture and drills are not incidents
   let n = 0;
-  const m = t.match(NEAR[lang]);
+  const m = t.replace(UNIT, ' ').match(NEAR[lang]);
   if (m) n = parseInt(String(m[1] || m[2]).replace(/[.,]/g, ''), 10) || 0;
   if (n >= 1900 && n <= 2100) n = 0; // a year, not a casualty count
   let s;
