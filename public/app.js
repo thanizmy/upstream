@@ -88,15 +88,27 @@
     return '<svg class="spark' + (big ? ' big' : '') + '" viewBox="0 0 ' + Wd + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Events per day, last ' + days + ' days">' + b + '<line class="base" x1="0" y1="' + H + '" x2="' + Wd + '" y2="' + H + '"/></svg>' +
       '<span class="sparkcap"><span>' + days + ' days ago</span><span>' + mx + ' peak</span><span>today</span></span>';
   }
-  /** Two groups of headlines: World (English-language outlets) and Local (the country's own languages). rows: [{ l, html }] */
+  /** Headlines as two tabs on top: World (English-language outlets) and Local (the country's own languages). rows: [{ l, html }] */
+  var GROUP_CAP = 6; // most headlines visible per tab; the rest scroll
   function groupHtml(rows, emptyMsg) {
     if (!rows.length) return '<div class="empty">' + emptyMsg + '</div>';
-    var g = [['World headlines', 'English-language outlets', rows.filter(function (r) { return !r.l || r.l === 'en'; })], ['Local headlines', 'local-language outlets, opened as an English translation', rows.filter(function (r) { return r.l && r.l !== 'en'; })]];
-    return g.map(function (x) {
-      return '<section class="grp"><h4 class="grphead"><span>' + x[0] + ' <b>' + x[2].length + '</b></span><small>' + x[1] + '</small></h4><div class="list grplist">' + (x[2].map(function (r) { return r.html; }).join('') || '<div class="empty">None in this selection.</div>') + '</div></section>';
-    }).join('');
+    var g = [['World', 'English-language outlets', rows.filter(function (r) { return !r.l || r.l === 'en'; })], ['Local', 'local-language outlets, opened as an English translation', rows.filter(function (r) { return r.l && r.l !== 'en'; })]];
+    var first = g[0][2].length ? 0 : 1;
+    return '<div class="gtabs"><div class="gtabbar" role="tablist">' + g.map(function (x, i) {
+      return '<button type="button" role="tab" class="gtab' + (i === first ? ' on' : '') + '" data-gt="' + i + '" aria-selected="' + (i === first) + '" title="' + x[1] + '">' + x[0] + ' headlines <b>' + x[2].length + '</b></button>';
+    }).join('') + '</div>' + g.map(function (x, i) {
+      return '<div class="list grplist" role="tabpanel" data-gp="' + i + '"' + (i === first ? '' : ' hidden') + '>' + (x[2].map(function (r) { return r.html; }).join('') || '<div class="empty">None in this selection.</div>') + '</div>';
+    }).join('') + '</div>';
   }
-  function capGroups(el, n) { if (el) el.querySelectorAll('.grplist').forEach(function (g) { cap(g, n); }); }
+  /** Cap the visible tab to GROUP_CAP rows (hidden panels have no layout, so they are capped when shown). */
+  function capGroups(el) { if (el) el.querySelectorAll('.grplist:not([hidden])').forEach(function (g) { cap(g, GROUP_CAP); }); }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('.gtab'); if (!t) return;
+    var box = t.closest('.gtabs'), i = t.dataset.gt;
+    box.querySelectorAll('.gtab').forEach(function (b) { var on = b === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    box.querySelectorAll('.grplist').forEach(function (p) { p.hidden = p.dataset.gp !== i; });
+    capGroups(box);
+  });
   function evRow(e, c, withPray) {
     var u = safeUrl(e.u);
     return '<div class="urow"><span>' + pips(e.s) + '</span>' +
@@ -435,22 +447,22 @@
       P.events.forEach(function (e) { e.items.forEach(function (it) { all.push({ t: it.t, te: it.te, u: it.u, f: it.f, l: it.l, d: it.d, s: it.s, th: e.th, n: e.r, eid: e.id }); }); });
       all.sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : b.s - a.s; });
       var urgent = P.events.filter(function (e) { return e.s >= 4; });
-      $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 5 of each group shown, scroll for more' : '');
+      $('uhSub').textContent = urgent.length + ' serious events in the data we hold' + (urgent.length > 5 ? ' · first 6 shown per tab, scroll for more' : '');
       $('uh').innerHTML = groupHtml(urgent.map(function (e) {
         return { l: e.l, html: '<div class="urow"><span>' + pips(e.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(e.u), e.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(e.ht || e.h) + '</span><span class="m">' + srcTags(e) + shortDate(e.d) + (e.last !== e.d ? ' to ' + shortDate(e.last) : '') + ' · ' + esc(TH[e.th] || '') + ' · ' + e.o + ' outlet' + (e.o > 1 ? 's' : '') + ' · ' + e.r + ' report' + (e.r > 1 ? 's' : '') + '</span>' + ot(e) + '</a>' + origLink(safeUrl(e.u), e.l) + '</div>' };
       }), 'No serious events in the data we hold for this country.');
-      capGroups($('uh'), 5);
+      capGroups($('uh'));
       P._ev = {}; P.events.forEach(function (e) { P._ev[e.id] = e; });
       function draw() {
         var ms = +$('fSev').value, th = $('fTh').value, days = +$('fWin').value, cut = Date.now() - days * 864e5;
         var q = $('fQ').value.trim().toLowerCase();
         var rows = all.filter(function (r) { return r.s >= ms && (!th || r.th === th) && new Date(r.d + 'T12:00:00Z') >= cut && (!q || ((r.te || '') + ' ' + r.t + ' ' + r.f + ' ' + (TH[r.th] || '')).toLowerCase().indexOf(q) >= 0); });
         var nl = rows.filter(function (r) { return r.l && r.l !== 'en'; }).length;
-        $('arSub').textContent = rows.length + ' of ' + all.length + ' reports (' + (rows.length - nl) + ' world, ' + nl + ' local) · first 5 of each group shown, scroll for more';
+        $('arSub').textContent = rows.length + ' of ' + all.length + ' reports (' + (rows.length - nl) + ' world, ' + nl + ' local) · first 6 shown per tab, scroll for more';
         $('reports').innerHTML = groupHtml(rows.map(function (r) {
           return { l: r.l, html: '<div class="urow"><span>' + pips(r.s) + '</span><a class="ev" href="' + esc(trUrl(safeUrl(r.u), r.l)) + '" target="_blank" rel="noopener"><span class="h">' + esc(r.te || r.t) + '</span><span class="m">' + lang(r.l) + tag(TH[r.th]) + (r.n > 1 ? tag('1 of ' + r.n + ' on this event', 1) : '') + '<span class="mt">' + esc(r.f) + ' · ' + shortDate(r.d) + '</span></span>' + ot({ ht: r.te, h: r.t }) + '</a>' + origLink(safeUrl(r.u), r.l) + '</div>' };
         }), 'No reports match these filters.');
-        capGroups($('reports'), 5);
+        capGroups($('reports'));
       }
       ['fSev', 'fTh', 'fWin'].forEach(function (id) { $(id).addEventListener('change', draw); });
       $('fQ').addEventListener('input', draw);
@@ -643,7 +655,7 @@
       d.querySelectorAll('.spark rect').forEach(function (r) { r.classList.toggle('sel', !!pick.day && r.dataset.day === pick.day); });
       list.hidden = false;
       list.innerHTML = groupHtml(evs.map(function (e) { return { l: e.l, html: evRow(e, c, false) }; }), 'No headlines for this selection.');
-      if (d.classList.contains('panelbox')) setTimeout(function () { capGroups(list, 5); }, 0);
+      setTimeout(function () { capGroups(list); }, 0);
       cnt.innerHTML = evs.length + ' headline' + (evs.length === 1 ? '' : 's') + ', ' + (pick.day ? esc(label) : label) + ' · most serious first · <button type="button" class="linkbtn" data-clear="' + cc + '">Hide</button>' + (pick.day ? ' · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button>' : '');
     }
     if (crowData[cc]) return draw(crowData[cc]);
