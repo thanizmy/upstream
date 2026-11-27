@@ -179,7 +179,7 @@
       ['Events, ' + winLabel(), fmt(wEv)], ['Reports, ' + winLabel(), fmt(wRep)], ['Serious events' + (isW ? ', 72h' : ', 30d'), fmt(wUrgent)]
     ].map(function (r) { return '<div class="kpi"><b>' + r[1] + '</b><span>' + r[0] + '</span></div>'; }).join('');
     // the whole-world brief, shown just before the map
-    $('worldSub').textContent = winLabel();
+    $('worldSub').textContent = winLabel(); $('worldLine').hidden = !user; // signed out: the headline above already says this
     $('worldLine').innerHTML = '<b>' + k.hot + '</b> of ' + k.watched + ' countries with reporting are at High or Critical in the ' + winLabel() + '. <a class="num" href="#sec-urgent" data-goto="sec-urgent" data-open="1" title="See all of them"><b>' + k.urgent + '</b></a> confirmed serious events ' + (isW ? 'landed in the last 72 hours' : 'happened this month') + '.';
     $('kpis').innerHTML = [
       ['Countries with reporting', fmt(k.watched)], ['At High or Critical', fmt(k.hot)], ['Live sources', fmt(D.feeds.ok)],
@@ -396,29 +396,24 @@
     var c = byCc[cc], el = $('profile');
     if (!c) { el.innerHTML = '<div class="hero"><p class="eyebrow">Country</p><h1>No recent reports for this country.</h1><p><a class="btn ghost" href="#brief">Back to the brief</a></p></div>'; return; }
     var w7 = c.w7, w30 = c.w30, w = W(c), inPray = pray().countries.indexOf(cc) >= 0, followed = watchList().list.indexOf(cc) >= 0;
-    var zv = w7.z, zTxt = zv == null ? 'building' : (zv > 0 ? '+' : '') + zv.toFixed(1);
-    var scoreP = view === 'w7' ? 'This week ' + fmt(Math.round(w.weeks[0])) + (w.S > w.weeks[0] + 0.5 ? ', plus a fading carry-over from earlier weeks' : '') : 'Sum of the last four weekly scores';
+    var zv = w7.z, serious = (w.sev[2] || 0) + (w.sev[3] || 0) + (w.sev[4] || 0);
     var surgeP = zv == null ? 'Needs about three weeks of history' : w7.lift ? 'High enough to lift the level one step' : 'Against its own recent weeks: ' + (zv >= 2.5 ? 'unusually high' : zv <= -1 ? 'calmer than usual' : 'about normal');
     el.innerHTML = '<div class="hero"><p class="eyebrow"><a href="#brief">← Brief</a> · Country report · ' + esc(c.region) + '</p>' +
-      '<h1><span class="fl big">' + c.fl + '</span> ' + esc(c.k) + '</h1>' +
-      '<div class="acts" style="margin-top:20px"><button class="btn" data-addp="' + cc + '" type="button">' + (inPray ? 'In my prayer space ✓' : 'Add to my prayer space') + '</button>' +
-      '<button class="btn ghost" data-watch="' + cc + '" type="button">' + (followed ? 'Following ✓' : 'Follow in my brief') + '</button></div></div>' +
-      '<div class="sechead"><h2>Report <i>summary</i></h2><span class="sub">' + winLabel() + ' · switch with Weekly / Monthly above</span></div>' +
-      '<div class="cells c3 prof">' +
-      '<div class="cell"><span class="k">Level</span><h3>' + BAND[w.band] + '</h3><p>' + pips(w.band) + ' Rank ' + w.rank + ' of ' + D.countries.length + '</p></div>' +
-      '<div class="cell"><span class="k">Events · reports</span><h3>' + w.ev + ' · ' + w.rep + '</h3><p>' + w7.ev + ' in 7 days, ' + w30.ev + ' in 30 days</p></div>' +
-      '<div class="cell"><span class="k">Outlets · peak severity</span><h3>' + w.src + ' · ' + w.maxSev + '</h3><p>' + (w.thin ? '<span class="thin">thin coverage</span> ' : '') + 'Distinct outlets reporting</p></div>' +
-      '</div>' +
-      '<div class="cells c3 prof">' +
-      '<div class="cell"><span class="k">Score (S)</span><h3>' + fmt(Math.round(w.S)) + '</h3><p>' + scoreP + '</p></div>' +
-      '<div class="cell"><span class="k">Surge vs its own normal</span><h3>' + zTxt + '</h3><p>' + surgeP + '</p></div>' +
-      '<div class="cell"><span class="k">Peak week</span><h3>' + BAND[w.peak] + '</h3><p>Highest of the last four weekly scores: ' + fmt(Math.round(Math.max.apply(null, w.weeks))) + '</p></div>' +
+      '<div class="chead"><h1><span class="fl big">' + c.fl + '</span> ' + esc(c.k) + '</h1>' +
+      '<div class="acts"><button class="btn" data-addp="' + cc + '" type="button">' + (inPray ? 'In my prayer space ✓' : 'Add to my prayer space') + '</button>' +
+      '<button class="btn ghost" data-watch="' + cc + '" type="button">' + (followed ? 'Following ✓' : 'Follow in my brief') + '</button></div></div></div>' +
+      '<div class="sechead"><h2>Report <i>summary</i></h2><span class="sub">' + winLabel() + ' · switch with Weekly / Monthly on the Brief</span></div>' +
+      '<div class="cells c4 prof">' +
+      '<div class="cell"><span class="k">Level</span><h3>' + BAND[w.band] + '</h3><p>' + pips(w.band) + ' Rank ' + w.rank + ' of ' + D.countries.length + ' · score ' + fmt(Math.round(w.S)) + '</p></div>' +
+      '<div class="cell"><span class="k">Serious events</span><h3>' + serious + '</h3><p>of ' + w.ev + ' events (severity 3 or higher)</p></div>' +
+      '<div class="cell"><span class="k">Reports</span><h3>' + w.rep + '</h3><p>from ' + w.src + ' outlets' + (w.thin ? ' · <span class="thin">thin coverage</span>' : '') + '</p></div>' +
+      '<div class="cell"><span class="k">Trend</span><h3>' + chgHtml(w) + '</h3><p>' + surgeP + '</p></div>' +
       '</div>' +
       '<p class="lede" id="pSummary"></p>' +
-      '<div class="prayer big">' + esc(c.prayer.text) + '</div>' +
       '<div class="sechead"><h2>Activity, <i>day by day</i></h2><span class="sub">' + chgLong(w) + '</span></div>' +
       '<div class="panelbox" data-cc="' + cc + '">' + spark(c, true, true) + '<p class="cr-count sub">Headlines for today shown · select a bar for another day · <button type="button" class="linkbtn" data-showall="' + cc + '">Show all in this window</button></p><div class="list cr-list" hidden></div></div>' +
       '<div class="sevbar" id="sevbar"></div><div id="themes" class="chips"></div>' +
+      '<div class="prayer big">' + esc(c.prayer.text) + '</div>' +
       '<div class="sechead"><h2>Urgent <i>history</i></h2><span class="sub" id="uhSub">Loading…</span></div><div class="list" id="uh"></div>' +
       '<div class="sechead"><h2>All <i>reports</i></h2><span class="sub" id="arSub"></span></div>' +
       '<div class="filters"><input type="search" id="fQ" placeholder="Search these headlines…" aria-label="Search headlines by keyword"><select id="fSev" aria-label="Minimum severity"><option value="0">All severities</option><option value="3">Severity 3 and up</option><option value="4">Severity 4 and up</option></select>' +
@@ -432,11 +427,10 @@
     $('themes').innerHTML = Object.keys(w.th).sort(function (a, b) { return w.th[b] - w.th[a]; }).map(function (t) { return '<span class="chip">' + esc(TH[t] || t) + ' <b>' + w.th[t] + '</b></span>'; }).join('');
     // narrative
     var top = w.top[0], themes = Object.keys(w.th).sort(function (a, b) { return w.th[b] - w.th[a]; });
-    var serious = (w.sev[3] || 0) + (w.sev[4] || 0);
-    $('pSummary').innerHTML = 'In the ' + winLabel() + ', Upstream tracked <b>' + w.ev + '</b> unique events in ' + esc(c.k) + ' from <b>' + w.src + '</b> outlets, <b>' + serious + '</b> of them serious (severity 4 or 5). ' +
-      (top ? 'The most serious is “' + esc(top.h) + '” (' + esc(top.src) + ', ' + top.o + ' outlet' + (top.o > 1 ? 's' : '') + '). ' : '') +
-      (themes.length ? 'Most events concern ' + esc((TH[themes[0]] || themes[0]).toLowerCase()) + (themes[1] ? ', then ' + esc((TH[themes[1]] || themes[1]).toLowerCase()) : '') + '. ' : '') +
+    var ps = (top ? 'Most serious: “' + esc(top.h) + '” (' + esc(top.src) + ', ' + top.o + ' outlet' + (top.o > 1 ? 's' : '') + '). ' : '') +
+      (themes.length ? 'Mostly ' + esc((TH[themes[0]] || themes[0]).toLowerCase()) + (themes[1] ? ', then ' + esc((TH[themes[1]] || themes[1]).toLowerCase()) : '') + '. ' : '') +
       (w.thin ? 'Coverage is thin, so treat this level with caution.' : '');
+    $('pSummary').innerHTML = ps; $('pSummary').hidden = !ps;
     var sel = $('fTh'); Object.keys(w30.th).concat(Object.keys(w7.th)).filter(function (t, i, a) { return a.indexOf(t) === i; }).forEach(function (t) { sel.insertAdjacentHTML('beforeend', '<option value="' + t + '">' + esc(TH[t] || t) + '</option>'); });
     loadProfile(cc);
     var pb = el.querySelector('.panelbox'); if (pb) crowShow(pb, { today: true });

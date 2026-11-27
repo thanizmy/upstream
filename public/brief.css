@@ -223,3 +223,23 @@ a.mv:hover{padding-left:8px;background:var(--sink)}
 .gtab{font:500 12px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:8px 14px;cursor:pointer}
 .gtab b{font-weight:500;margin-left:4px}.gtab:hover{color:var(--ink)}.gtab.on{color:var(--ink);border-bottom-color:var(--ink)}
 .grplist[hidden]{display:none}
+
+/* brief: toggle beside the dateline, shorter headline */
+.herotop{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;margin-bottom:18px}
+.herotop .eyebrow{margin:0}.herotop .viewrow{margin:0}
+#tab-brief .hero{padding-top:36px}#tab-brief .hero h1{font-size:clamp(26px,3.6vw,40px);max-width:30ch}
+/* country page: name and actions on one row, plain tiles */
+.chead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px 24px;flex-wrap:wrap;margin-top:8px}
+.chead .acts{display:flex;gap:8px;flex-wrap:wrap}
+#profile .hero{padding-top:36px}
+#pSummary{margin-top:14px;max-width:70ch}
+/* phone */
+@media (max-width:560px){
+  .top .bar nav{order:3;flex:1 0 100%;margin-left:0}.top .bar nav a{flex:1;justify-content:center;min-height:38px;padding:8px 10px}
+  .top .bar .brand{order:1;flex:1}.top .bar .auth{order:2}
+  .chead .acts{width:100%;flex-wrap:nowrap}.chead .acts .btn{flex:1 1 0;justify-content:center;text-align:center;padding:0 8px;font-size:10.5px;letter-spacing:.08em;min-height:40px}
+  .secin{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
+}
+/* toggle stays pinned to the right edge; its note sits under the headline */
+.herotop .viewrow{margin-left:auto;flex:none}
+.viewnote{margin:14px 0 0}
